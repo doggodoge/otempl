@@ -83,8 +83,9 @@ main :: proc() {
 	context.allocator = context.temp_allocator
 
 	Options :: struct {
-		type: Template_Type `usage:"Basic for minimal template, Raylib for a raylib window template."`,
-		name: string `args:"pos=0,required" usage:"The name of the project"`,
+		type:    Template_Type `usage:"Basic for minimal template, Raylib for a raylib window template."`,
+		name:    string `args:"pos=0,required" usage:"The name of the project"`,
+		with_jj: bool `usage:"Init a Jujutsu repo"`,
 	}
 
 	opt: Options
@@ -103,5 +104,35 @@ main :: proc() {
 		ok := basic_template_create(opt.name, raylib_template)
 		if !ok do panic("Failed to create raylib template")
 		fmt.printfln("Created raylib template in %q", opt.name)
+	}
+
+
+	if opt.with_jj {
+		fmt.println("Creating a jj repo...")
+
+		// This is quick and dirty, we don't care much about error
+		// handling with this one.
+		exec :: proc(command: string, dir: string) {
+			cwd_str, _ := os.get_working_directory(context.allocator)
+			cwd := fmt.aprintf("%s/%s", cwd_str, dir)
+			cmd := strings.split(command, " ")
+			_state, _stdout, _stderr, _err := os.process_exec(
+				{working_dir = cwd, command = cmd},
+				context.allocator,
+			)
+		}
+
+		remote_cmd := fmt.aprintf(
+			"jj git remote add origin git@git.sr.ht:~gary_moore/%s",
+			opt.name,
+		)
+		exec("jj git init --colocate", opt.name)
+		exec("jj desc -r @ -m initial-commit", opt.name)
+		exec(remote_cmd, opt.name)
+		exec("jj bookmark create -r @ main", opt.name)
+		exec("jj bookmark track main --remote=origin", opt.name)
+		exec("jj new", opt.name)
+
+		fmt.println("Created jj repo")
 	}
 }
