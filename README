@@ -1,0 +1,15 @@
+        __                         __ 
+.-----.|  |_.-----.--------.-----.|  |
+|  _  ||   _|  -__|        |  _  ||  |
+|_____||____|_____|__|__|__|   __||__|
+                           |__|       
+
+---
+
+Simple personal CLI tool for generating Odin projects from either a Basic
+(hello world) or Raylib template.
+
+Usage example:
+
+ > otempl -type:Raylib -name:some-game
+
