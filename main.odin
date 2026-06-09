@@ -28,12 +28,6 @@ raylib_template :: Basic_Template {
 	makefile  = #load("./templates/raylib/Makefile.template"),
 }
 
-remove_dir_or_panic :: proc(name: string) {
-	if os.remove_all(name) != nil {
-		panic("Something has gone horribly wrong with fs operations")
-	}
-}
-
 basic_template_create :: proc(name: string, template: Basic_Template) -> bool {
 	makefile_str := string(template.makefile)
 	gitignore_str := string(template.gitignore)
@@ -51,6 +45,12 @@ basic_template_create :: proc(name: string, template: Basic_Template) -> bool {
 
 	make_dir_err := os.make_directory(name)
 	if make_dir_err != nil do return false
+
+	remove_dir_or_panic :: proc(name: string) {
+		if os.remove_all(name) != nil {
+			panic("Something has gone horribly wrong with fs operations")
+		}
+	}
 
 	makefile_write_err := os.write_entire_file(
 		fmt.aprintf("%s/Makefile", name),
