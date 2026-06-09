@@ -110,16 +110,18 @@ main :: proc() {
 	if opt.with_jj {
 		fmt.println("Creating a jj repo...")
 
-		// This is quick and dirty, we don't care much about error
-		// handling with this one.
 		exec :: proc(command: string, dir: string) {
 			cwd_str, _ := os.get_working_directory(context.allocator)
 			cwd := fmt.aprintf("%s/%s", cwd_str, dir)
 			cmd := strings.split(command, " ")
-			_state, _stdout, _stderr, _err := os.process_exec(
+			state, _, stderr, err := os.process_exec(
 				{working_dir = cwd, command = cmd},
 				context.allocator,
 			)
+			if err != nil || state.exit_code != 0 {
+				fmt.eprintf("jj command failed: %q\n", command)
+				fmt.eprintf("  stderr: %s\n", stderr)
+			}
 		}
 
 		remote_cmd := fmt.aprintf(
