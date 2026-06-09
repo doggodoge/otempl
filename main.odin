@@ -28,6 +28,12 @@ raylib_template :: Basic_Template {
 	makefile  = #load("./templates/raylib/Makefile.template"),
 }
 
+remove_dir_or_panic :: proc(name: string) {
+	if os.remove_all(name) != nil {
+		panic("Something has gone horribly wrong with fs operations")
+	}
+}
+
 basic_template_create :: proc(name: string, template: Basic_Template) -> bool {
 	makefile_str := string(template.makefile)
 	gitignore_str := string(template.gitignore)
@@ -50,16 +56,25 @@ basic_template_create :: proc(name: string, template: Basic_Template) -> bool {
 		fmt.aprintf("%s/Makefile", name),
 		makefile_templated,
 	)
-	if makefile_write_err != nil do return false
+	if makefile_write_err != nil {
+		remove_dir_or_panic(name)
+		return false
+	}
 
 	main_write_err := os.write_entire_file(fmt.aprintf("%s/main.odin", name), template.main)
-	if main_write_err != nil do return false
+	if main_write_err != nil {
+		remove_dir_or_panic(name)
+		return false
+	}
 
 	gitignore_write_err := os.write_entire_file(
 		fmt.aprintf("%s/.gitignore", name),
 		gitignore_templated,
 	)
-	if gitignore_write_err != nil do return false
+	if gitignore_write_err != nil {
+		remove_dir_or_panic(name)
+		return false
+	}
 
 	return true
 }
