@@ -65,6 +65,8 @@ basic_template_create :: proc(name: string, template: Basic_Template) -> bool {
 }
 
 main :: proc() {
+	context.allocator = context.temp_allocator
+
 	Options :: struct {
 		type: Template_Type `usage:"Basic for minimal template, Raylib for a raylib window template."`,
 		name: string `args:"pos=0,required" usage:"The name of the project"`,
