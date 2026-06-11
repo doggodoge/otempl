@@ -4,3 +4,10 @@ Future plans and ideas
  - Figlet -> README templating
  - A hot reloading template
  - Add a SourceHut CI template option.
+ - Web/WASM template.
+ - More template variables, eg. author, year, license.
+ - A --verbose flag.
+ - A --dry-run flag, perhaps printing fully templated files to console?
+ - Use []string instead of string for exec().
+ - A --list flag to print all integrated templates.
+ - A --force flag to overwrite an existing project directory instead of failing.
