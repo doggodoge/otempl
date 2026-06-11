@@ -184,12 +184,11 @@ main :: proc() {
 	if opt.with_jj {
 		fmt.println("Creating a jj repo...")
 
-		exec :: proc(command: string, dir: string) {
+		exec :: proc(command: []string, dir: string) {
 			cwd_str, _ := os.get_working_directory(context.allocator)
 			cwd := fmt.aprintf("%s/%s", cwd_str, dir)
-			cmd := strings.split(command, " ")
 			state, _, stderr, err := os.process_exec(
-				{working_dir = cwd, command = cmd},
+				{working_dir = cwd, command = command},
 				context.allocator,
 			)
 			if err != nil || state.exit_code != 0 {
@@ -198,16 +197,13 @@ main :: proc() {
 			}
 		}
 
-		remote_cmd := fmt.aprintf(
-			"jj git remote add origin git@git.sr.ht:~gary_moore/%s",
-			opt.name,
-		)
-		exec("jj git init --colocate", opt.name)
-		exec("jj desc -r @ -m initial-commit", opt.name)
-		exec(remote_cmd, opt.name)
-		exec("jj bookmark create -r @ main", opt.name)
-		exec("jj bookmark track main --remote=origin", opt.name)
-		exec("jj new", opt.name)
+		remote := fmt.aprintf("git@git.sr.ht:~gary_moore/%s", opt.name)
+		exec({"jj", "git", "init", "--colocate"}, opt.name)
+		exec({"jj", "desc", "-r", "@", "-m", "initial commit"}, opt.name)
+		exec({"jj", "git", "remote", "add", "origin", remote}, opt.name)
+		exec({"jj", "bookmark", "create", "-r", "@", "main"}, opt.name)
+		exec({"jj", "bookmark", "track", "main", "--remote=origin"}, opt.name)
+		exec({"jj", "new"}, opt.name)
 
 		fmt.println("Created jj repo")
 	}
