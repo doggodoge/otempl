@@ -1,0 +1,38 @@
+{name} -- An Odin library.
+
+Usage
+-----
+
+To use this library in your project, add it to your ols.json collections:
+
+    {
+        "collections": [
+            {
+                "name": "{name}",
+                "path": "path/to/{name}"
+            }
+        ]
+    }
+
+Then import it in your code:
+
+    import "{name}"
+
+Development
+-----------
+
+Run checks:
+
+    make check
+
+Run tests:
+
+    make test
+
+Generate documentation:
+
+    make doc
+
+Run the example:
+
+    make example

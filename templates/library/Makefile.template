@@ -1,0 +1,16 @@
+.PHONY: check test doc example clean
+
+check:
+	odin check .
+
+test:
+	odin test .
+
+doc:
+	odin doc .
+
+example:
+	odin run examples/basic -collection:{name}=.
+
+clean:
+	rm -rf {name}.dSYM/

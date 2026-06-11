@@ -1,0 +1,8 @@
+package main
+
+import "{name}"
+import "core:fmt"
+
+main :: proc() {
+	fmt.println({name}.say_hello())
+}
