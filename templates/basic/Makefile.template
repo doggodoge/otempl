@@ -1,4 +1,7 @@
-.PHONY: build run release debug install clean
+.PHONY: check build run release debug install clean
+
+check:
+	odin check .
 
 build:
 	odin build .
