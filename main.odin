@@ -15,18 +15,21 @@ Basic_Template :: struct {
 	gitignore: []byte,
 	main:      []byte,
 	makefile:  []byte,
+	readme:    []byte,
 }
 
 basic_template :: Basic_Template {
 	gitignore = #load("./templates/basic/.gitignore.template"),
 	main      = #load("./templates/basic/main.odin.template"),
 	makefile  = #load("./templates/basic/Makefile.template"),
+	readme    = #load("./templates/basic/README.template"),
 }
 
 raylib_template :: Basic_Template {
 	gitignore = #load("./templates/raylib/.gitignore.template"),
 	main      = #load("./templates/raylib/main.odin.template"),
 	makefile  = #load("./templates/raylib/Makefile.template"),
+	readme    = #load("./templates/raylib/README.template"),
 }
 
 Library_Template :: struct {
@@ -47,20 +50,53 @@ library_template :: Library_Template {
 	readme       = #load("./templates/library/README.template", []byte),
 }
 
-basic_template_create :: proc(name: string, template: Basic_Template) -> bool {
+basic_template_create :: proc(
+	template: Basic_Template,
+	name: string,
+	description: string,
+) -> bool {
+	readme_str := string(template.readme)
 	makefile_str := string(template.makefile)
 	gitignore_str := string(template.gitignore)
 
-	makefile_templated, makefile_templated_ok := strings.replace(makefile_str, "{name}", name, 100)
-	if !makefile_templated_ok do return false
+	figlet_cmd := []string{"figlet", "-f", "chunky", name}
+	state, stdout, stderr, err := os.process_exec({command = figlet_cmd}, context.allocator)
+	if err != nil || state.exit_code != 0 {
+		fmt.eprintf("figlet command failed: %q\n", figlet_cmd)
+		fmt.eprintf("  stderr: %s\n", stderr)
+	}
 
-	gitignore_templated, gitignore_templated_ok := strings.replace(
+	readme_templated: string
+
+	figlet_template_result, _readme_templated_allocated := strings.replace(
+		readme_str,
+		"{figlet}",
+		string(stdout),
+		-1,
+	)
+	readme_templated = figlet_template_result
+
+	if description == "" {
+		res, _allocated := strings.replace(readme_templated, "{description}", "", -1)
+		readme_templated = res
+	} else {
+		res, _allocated := strings.replace(readme_templated, "{description}", description, 1000)
+		readme_templated = res
+	}
+
+	makefile_templated, _makefile_templated_allocated := strings.replace(
+		makefile_str,
+		"{name}",
+		name,
+		100,
+	)
+
+	gitignore_templated, _gitignore_templated_allocated := strings.replace(
 		gitignore_str,
 		"{name}",
 		name,
 		100,
 	)
-	if !gitignore_templated_ok do return false
 
 	make_dir_err := os.make_directory(name)
 	if make_dir_err != nil do return false
@@ -69,6 +105,12 @@ basic_template_create :: proc(name: string, template: Basic_Template) -> bool {
 		if os.remove_all(name) != nil {
 			panic("Something has gone horribly wrong with fs operations")
 		}
+	}
+
+	readme_write_err := os.write_entire_file(fmt.aprintf("%s/README", name), readme_templated)
+	if readme_write_err != nil {
+		remove_dir_or_panic(name)
+		return false
 	}
 
 	makefile_write_err := os.write_entire_file(
@@ -102,9 +144,10 @@ main :: proc() {
 	context.allocator = context.temp_allocator
 
 	Options :: struct {
-		type:    Template_Type `usage:"Basic for minimal template, Raylib for a raylib window template, Library for a reusable package template."`,
-		name:    string `args:"pos=0,required" usage:"The name of the project"`,
-		with_jj: bool `usage:"Init a Jujutsu repo"`,
+		type:        Template_Type `usage:"Basic for minimal template, Raylib for a raylib window template, Library for a reusable package template."`,
+		name:        string `args:"pos=0,required" usage:"The name of the project"`,
+		description: string `usage:"Optional description for project."`,
+		with_jj:     bool `usage:"Init a Jujutsu repo"`,
 	}
 
 	opt: Options
@@ -115,12 +158,12 @@ main :: proc() {
 	switch opt.type {
 	case .Basic:
 		fmt.printfln("Generating basic template in %q...", opt.name)
-		ok := basic_template_create(opt.name, basic_template)
+		ok := basic_template_create(basic_template, opt.name, opt.description)
 		if !ok do panic("failed to create basic template")
 		fmt.printfln("Created basic template in %q", opt.name)
 	case .Raylib:
 		fmt.printfln("Generating raylib template in %q...", opt.name)
-		ok := basic_template_create(opt.name, raylib_template)
+		ok := basic_template_create(raylib_template, opt.name, opt.description)
 		if !ok do panic("Failed to create raylib template")
 		fmt.printfln("Created raylib template in %q", opt.name)
 

@@ -1,7 +1,7 @@
 Future plans and ideas
 ----------------------
 
- - Figlet -> README templating
+ - Add readme templating for library template
  - A hot reloading template
  - Add a SourceHut CI template option.
  - Web/WASM template.
