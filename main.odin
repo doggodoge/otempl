@@ -182,7 +182,26 @@ main :: proc() {
 		makefile := template_file(library_template.makefile, opt.name)
 		gitignore := template_file(library_template.gitignore, opt.name)
 		ols_json := template_file(library_template.ols_json, opt.name)
-		readme := template_file(library_template.readme, opt.name)
+		readme_str := template_file(library_template.readme, opt.name)
+
+		figlet_cmd := []string{"figlet", "-f", "chunky", opt.name}
+		state, stdout, stderr, err := os.process_exec({command = figlet_cmd}, context.allocator)
+		if err != nil || state.exit_code != 0 {
+			fmt.eprintf("figlet command failed: %q\n", figlet_cmd)
+			fmt.eprintf("  stderr: %s\n", stderr)
+		}
+
+		readme := readme_str
+		figlet_result, _ := strings.replace(readme, "{figlet}", string(stdout), -1)
+		readme = figlet_result
+
+		if opt.description == "" {
+			res, _ := strings.replace(readme, "{description}", "", -1)
+			readme = res
+		} else {
+			res, _ := strings.replace(readme, "{description}", opt.description, 1000)
+			readme = res
+		}
 
 		// Create directory tree.
 		if os.make_directory(opt.name) != nil {
