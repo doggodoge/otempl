@@ -1,15 +1,19 @@
-        __                         __ 
+        __                         __
 .-----.|  |_.-----.--------.-----.|  |
 |  _  ||   _|  -__|        |  _  ||  |
 |_____||____|_____|__|__|__|   __||__|
-                           |__|       
+                           |__|
 
 ---
 
 Simple personal CLI tool for generating Odin projects from either a Basic
 (hello world) or Raylib template.
 
+You must have the following CLI tools installed:
+
+ - jj (Jujutsu VCS) for "--with-jj" flag
+ - figlet
+
 Usage example:
 
- > otempl -type:Raylib -name:some-game
-
+ > otempl some-game --type Raylib --description "Description for the game" --with-jj
