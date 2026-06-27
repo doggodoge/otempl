@@ -1,5 +1,6 @@
 package main
 
+import bubbletext "./bubbletext"
 import "core:flags"
 import "core:fmt"
 import "core:os"
@@ -59,22 +60,18 @@ basic_template_create :: proc(
 	makefile_str := string(template.makefile)
 	gitignore_str := string(template.gitignore)
 
-	figlet_cmd := []string{"figlet", "-f", "chunky", name}
-	state, stdout, stderr, err := os.process_exec({command = figlet_cmd}, context.allocator)
-	if err != nil || state.exit_code != 0 {
-		fmt.eprintf("figlet command failed: %q\n", figlet_cmd)
-		fmt.eprintf("  stderr: %s\n", stderr)
-	}
+	banner := bubbletext.get_bytes(name)
+	defer delete(banner)
 
 	readme_templated: string
 
-	figlet_template_result, _readme_templated_allocated := strings.replace(
+	banner_template_result, _readme_templated_allocated := strings.replace(
 		readme_str,
 		"{figlet}",
-		string(stdout),
+		string(banner),
 		-1,
 	)
-	readme_templated = figlet_template_result
+	readme_templated = banner_template_result
 
 	if description == "" {
 		res, _allocated := strings.replace(readme_templated, "{description}", "", -1)
@@ -184,16 +181,12 @@ main :: proc() {
 		ols_json := template_file(library_template.ols_json, opt.name)
 		readme_str := template_file(library_template.readme, opt.name)
 
-		figlet_cmd := []string{"figlet", "-f", "chunky", opt.name}
-		state, stdout, stderr, err := os.process_exec({command = figlet_cmd}, context.allocator)
-		if err != nil || state.exit_code != 0 {
-			fmt.eprintf("figlet command failed: %q\n", figlet_cmd)
-			fmt.eprintf("  stderr: %s\n", stderr)
-		}
+		banner := bubbletext.get_bytes(opt.name)
+		defer delete(banner)
 
 		readme := readme_str
-		figlet_result, _ := strings.replace(readme, "{figlet}", string(stdout), -1)
-		readme = figlet_result
+		banner_result, _ := strings.replace(readme, "{figlet}", string(banner), -1)
+		readme = banner_result
 
 		if opt.description == "" {
 			res, _ := strings.replace(readme, "{description}", "", -1)

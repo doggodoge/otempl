@@ -1,4 +1,4 @@
-.PHONY: build run release debug install clean
+.PHONY: build run release debug install bubbletext-font clean
 
 build:
 	odin build .
@@ -11,6 +11,9 @@ release:
 
 debug:
 	odin build . -debug
+
+bubbletext-font:
+	odin run tools/build_bubbletext_font.odin -file
 
 install: release
 	mkdir -p ~/.local/bin
