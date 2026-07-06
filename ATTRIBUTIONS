@@ -1,0 +1,21 @@
+Third-party attributions
+========================
+
+FIGlet font
+-----------
+
+This project includes a bundled FIGlet font at:
+
+  bubbletext/chunky.flf
+
+The font file identifies itself as:
+
+  Square by Chris Gill, 30-JUN-94 -- based on .sig of Jeb Hagan.
+
+The generated binary font buffer at:
+
+  bubbletext/chunky.bin
+
+is derived from that FIGlet font and is rebuilt with:
+
+  make bubbletext-font
