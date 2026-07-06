@@ -16,6 +16,7 @@ bubbletext-font:
 	odin run tools/build_bubbletext_font.odin -file
 
 install: release
+	strip otempl
 	mkdir -p ~/.local/bin
 	cp otempl ~/.local/bin/otempl
 	chmod +x ~/.local/bin/otempl
