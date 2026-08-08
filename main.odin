@@ -12,25 +12,45 @@ Template_Type :: enum {
 	Library,
 }
 
+Language :: enum {
+	odin,
+	c,
+}
+
 Basic_Template :: struct {
-	gitignore: []byte,
-	main:      []byte,
-	makefile:  []byte,
-	readme:    []byte,
+	gitignore:                []byte,
+	main:                     []byte,
+	main_filename:            string,
+	makefile:                 []byte,
+	readme:                   []byte,
+	language_server:          []byte,
+	language_server_filename: string,
 }
 
 basic_template :: Basic_Template {
-	gitignore = #load("./templates/basic/.gitignore.template"),
-	main      = #load("./templates/basic/main.odin.template"),
-	makefile  = #load("./templates/basic/Makefile.template"),
-	readme    = #load("./templates/basic/README.template"),
+	gitignore     = #load("./templates/basic/.gitignore.template"),
+	main          = #load("./templates/basic/main.odin.template"),
+	main_filename = "main.odin",
+	makefile      = #load("./templates/basic/Makefile.template"),
+	readme        = #load("./templates/basic/README.template"),
 }
 
 raylib_template :: Basic_Template {
-	gitignore = #load("./templates/raylib/.gitignore.template"),
-	main      = #load("./templates/raylib/main.odin.template"),
-	makefile  = #load("./templates/raylib/Makefile.template"),
-	readme    = #load("./templates/raylib/README.template"),
+	gitignore     = #load("./templates/raylib/.gitignore.template"),
+	main          = #load("./templates/raylib/main.odin.template"),
+	main_filename = "main.odin",
+	makefile      = #load("./templates/raylib/Makefile.template"),
+	readme        = #load("./templates/raylib/README.template"),
+}
+
+c_basic_template :: Basic_Template {
+	gitignore                = #load("./templates/c/basic/.gitignore.template"),
+	main                     = #load("./templates/c/basic/main.c.template"),
+	main_filename            = "main.c",
+	makefile                 = #load("./templates/c/basic/Makefile.template"),
+	readme                   = #load("./templates/c/basic/README.template"),
+	language_server          = #load("./templates/c/basic/.clangd.template"),
+	language_server_filename = ".clangd",
 }
 
 Library_Template :: struct {
@@ -119,7 +139,10 @@ basic_template_create :: proc(
 		return false
 	}
 
-	main_write_err := os.write_entire_file(fmt.aprintf("%s/main.odin", name), template.main)
+	main_write_err := os.write_entire_file(
+		fmt.aprintf("%s/%s", name, template.main_filename),
+		template.main,
+	)
 	if main_write_err != nil {
 		remove_dir_or_panic(name)
 		return false
@@ -134,6 +157,17 @@ basic_template_create :: proc(
 		return false
 	}
 
+	if template.language_server_filename != "" {
+		language_server_write_err := os.write_entire_file(
+			fmt.aprintf("%s/%s", name, template.language_server_filename),
+			template.language_server,
+		)
+		if language_server_write_err != nil {
+			remove_dir_or_panic(name)
+			return false
+		}
+	}
+
 	return true
 }
 
@@ -142,6 +176,7 @@ main :: proc() {
 
 	Options :: struct {
 		type:        Template_Type `usage:"Basic for minimal template, Raylib for a raylib window template, Library for a reusable package template."`,
+		lang:        Language `usage:"Project language: odin or c. C currently supports only the Basic template."`,
 		name:        string `args:"pos=0,required" usage:"The name of the project"`,
 		description: string `usage:"Optional description for project."`,
 		with_jj:     bool `usage:"Init a Jujutsu repo"`,
@@ -152,12 +187,23 @@ main :: proc() {
 
 	flags.parse_or_exit(&opt, os.args, style)
 
+	selected_basic_template := basic_template
+	basic_template_name := "basic"
+	if opt.lang == .c {
+		if opt.type != .Basic {
+			fmt.eprintfln("error: the %s template is not available for C", opt.type)
+			os.exit(1)
+		}
+		selected_basic_template = c_basic_template
+		basic_template_name = "C basic"
+	}
+
 	switch opt.type {
 	case .Basic:
-		fmt.printfln("Generating basic template in %q...", opt.name)
-		ok := basic_template_create(basic_template, opt.name, opt.description)
-		if !ok do panic("failed to create basic template")
-		fmt.printfln("Created basic template in %q", opt.name)
+		fmt.printfln("Generating %s template in %q...", basic_template_name, opt.name)
+		ok := basic_template_create(selected_basic_template, opt.name, opt.description)
+		if !ok do panic(fmt.aprintf("failed to create %s template", basic_template_name))
+		fmt.printfln("Created %s template in %q", basic_template_name, opt.name)
 	case .Raylib:
 		fmt.printfln("Generating raylib template in %q...", opt.name)
 		ok := basic_template_create(raylib_template, opt.name, opt.description)
@@ -234,7 +280,6 @@ main :: proc() {
 
 		fmt.printfln("Created library template in %q", opt.name)
 	}
-
 
 	if opt.with_jj {
 		fmt.println("Creating a jj repo...")

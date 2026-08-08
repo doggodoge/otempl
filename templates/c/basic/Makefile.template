@@ -1,0 +1,25 @@
+CC ?= cc
+CFLAGS ?= -std=c17 -Wall -Wextra -Wpedantic
+TARGET := {name}
+
+.PHONY: build run release debug install clean
+
+build:
+	$(CC) $(CFLAGS) main.c -o $(TARGET)
+
+run: build
+	./$(TARGET)
+
+release:
+	$(CC) $(CFLAGS) -O2 main.c -o $(TARGET)
+
+debug:
+	$(CC) $(CFLAGS) -O0 -g main.c -o $(TARGET)
+
+install: release
+	mkdir -p ~/.local/bin
+	cp $(TARGET) ~/.local/bin/$(TARGET)
+	chmod +x ~/.local/bin/$(TARGET)
+
+clean:
+	rm -rf $(TARGET) $(TARGET).dSYM/

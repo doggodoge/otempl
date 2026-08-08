@@ -7,7 +7,8 @@
 ---
 
 Simple personal CLI tool for generating Odin projects from either a Basic
-(hello world) or Raylib template.
+(hello world), Raylib, or Library template. A C hello-world project is also
+available with the Basic template.
 
 You must have the following CLI tools installed:
 
@@ -16,3 +17,5 @@ You must have the following CLI tools installed:
 Usage example:
 
  > otempl some-game --type Raylib --description "Description for the game" --with-jj
+
+ > otempl hello-c --lang c
