@@ -1,7 +1,7 @@
 .PHONY: check test doc example clean
 
 check:
-	odin check .
+	odin check . -no-entry-point
 
 test:
 	odin test .
@@ -10,7 +10,7 @@ doc:
 	odin doc .
 
 example:
-	odin run examples/basic -collection:{name}=.
+	odin run examples/basic -collection:{{name}}=.
 
 clean:
-	rm -rf {name}.dSYM/
+	rm -rf {{name}}.dSYM/

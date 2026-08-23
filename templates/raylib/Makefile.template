@@ -17,8 +17,8 @@ debug:
 
 install: release
 	mkdir -p ~/.local/bin
-	cp {name} ~/.local/bin/{name}
-	chmod +x ~/.local/bin/{name}
+	cp {{name}} ~/.local/bin/{{name}}
+	chmod +x ~/.local/bin/{{name}}
 
 clean:
-	rm -rf {name} {name}.dSYM/
+	rm -rf {{name}} {{name}}.dSYM/

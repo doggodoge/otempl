@@ -1,7 +1,7 @@
-{figlet}
+{{figlet}}
 ---
 
-{description}
+{{description}}
 
 Usage
 -----
@@ -11,15 +11,15 @@ To use this library in your project, add it to your ols.json collections:
     {
         "collections": [
             {
-                "name": "{name}",
-                "path": "path/to/{name}"
+                "name": "{{name}}",
+                "path": "path/to/{{name}}"
             }
         ]
     }
 
 Then import it in your code:
 
-    import "{name}"
+    import "{{name}}:."
 
 Development
 -----------

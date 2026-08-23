@@ -1,3 +1,8 @@
 CompileFlags:
   Compiler: clang
   Add: [-std=c17, -Wall, -Wextra, -Wpedantic]
+---
+If:
+  PathMatch: .*\.h
+CompileFlags:
+  Add: [-xc]

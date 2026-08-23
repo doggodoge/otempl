@@ -1,6 +1,6 @@
 CC ?= cc
 CFLAGS ?= -std=c17 -Wall -Wextra -Wpedantic
-TARGET := {name}
+TARGET := {{name}}
 
 .PHONY: build run release debug install clean
 

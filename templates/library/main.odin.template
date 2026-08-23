@@ -1,14 +1,14 @@
-// Package {name} is an Odin library.
+// Package {{name}} is an Odin library.
 //
 // Add your documentation here, describing what the library does,
 // how to use it, and any relevant details.
-package {name}
+package {{name}}
 
 import "core:fmt"
 
 // say_hello returns a greeting from the library.
 say_hello :: proc() -> string {
-	return "Hello from {name}"
+	return "Hello from {{name}}"
 }
 
 // add returns the sum of two integers.

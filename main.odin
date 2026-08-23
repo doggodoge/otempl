@@ -3,8 +3,12 @@ package main
 import bubbletext "./bubbletext"
 import "core:flags"
 import "core:fmt"
+import "core:mem"
 import "core:os"
 import "core:strings"
+
+// Re: ownership. Everything lasts the lifetime of the app.
+// This is only really intended to run for a few ms anyway.
 
 Template_Type :: enum {
 	Basic,
@@ -17,153 +21,125 @@ Language :: enum {
 	c,
 }
 
-Basic_Template :: struct {
-	gitignore:                []byte,
-	main:                     []byte,
-	main_filename:            string,
-	makefile:                 []byte,
-	readme:                   []byte,
-	language_server:          []byte,
-	language_server_filename: string,
+Substitution :: struct {
+	key:   string,
+	value: string,
 }
 
-basic_template :: Basic_Template {
-	gitignore     = #load("./templates/basic/.gitignore.template"),
-	main          = #load("./templates/basic/main.odin.template"),
-	main_filename = "main.odin",
-	makefile      = #load("./templates/basic/Makefile.template"),
-	readme        = #load("./templates/basic/README.template"),
-}
-
-raylib_template :: Basic_Template {
-	gitignore     = #load("./templates/raylib/.gitignore.template"),
-	main          = #load("./templates/raylib/main.odin.template"),
-	main_filename = "main.odin",
-	makefile      = #load("./templates/raylib/Makefile.template"),
-	readme        = #load("./templates/raylib/README.template"),
-}
-
-c_basic_template :: Basic_Template {
-	gitignore                = #load("./templates/c/basic/.gitignore.template"),
-	main                     = #load("./templates/c/basic/main.c.template"),
-	main_filename            = "main.c",
-	makefile                 = #load("./templates/c/basic/Makefile.template"),
-	readme                   = #load("./templates/c/basic/README.template"),
-	language_server          = #load("./templates/c/basic/.clangd.template"),
-	language_server_filename = ".clangd",
-}
-
-Library_Template :: struct {
-	main_odin:    []byte,
-	example_main: []byte,
-	makefile:     []byte,
-	gitignore:    []byte,
-	ols_json:     []byte,
-	readme:       []byte,
-}
-
-library_template :: Library_Template {
-	main_odin    = #load("./templates/library/main.odin.template", []byte),
-	example_main = #load("./templates/library/examples/main.odin.template", []byte),
-	makefile     = #load("./templates/library/Makefile.template", []byte),
-	gitignore    = #load("./templates/library/.gitignore.template", []byte),
-	ols_json     = #load("./templates/library/ols.json.template", []byte),
-	readme       = #load("./templates/library/README.template", []byte),
-}
-
-basic_template_create :: proc(
-	template: Basic_Template,
+Template_File :: struct {
 	name: string,
-	description: string,
-) -> bool {
-	readme_str := string(template.readme)
-	makefile_str := string(template.makefile)
-	gitignore_str := string(template.gitignore)
+	data: []byte,
+}
 
-	banner := bubbletext.get_bytes(name)
-	defer delete(banner)
+Template :: struct {
+	files:         []Template_File,
+	substitutions: []Substitution,
+}
 
-	readme_templated: string
+TEMP_ARENA_SIZE :: mem.Megabyte
 
-	banner_template_result, _readme_templated_allocated := strings.replace(
-		readme_str,
-		"{figlet}",
-		string(banner),
-		-1,
-	)
-	readme_templated = banner_template_result
+temp_arena_buffer: [TEMP_ARENA_SIZE]byte
+temp_arena: mem.Arena
 
-	if description == "" {
-		res, _allocated := strings.replace(readme_templated, "{description}", "", -1)
-		readme_templated = res
-	} else {
-		res, _allocated := strings.replace(readme_templated, "{description}", description, 1000)
-		readme_templated = res
+basic_template_files := [?]Template_File {
+	{name = ".gitignore", data = #load("./templates/basic/.gitignore.template")},
+	{name = "main.odin", data = #load("./templates/basic/main.odin.template")},
+	{name = "Makefile", data = #load("./templates/basic/Makefile.template")},
+	{name = "README", data = #load("./templates/basic/README.template")},
+}
+
+raylib_template_files := [?]Template_File {
+	{name = ".gitignore", data = #load("./templates/raylib/.gitignore.template")},
+	{name = "main.odin", data = #load("./templates/raylib/main.odin.template")},
+	{name = "Makefile", data = #load("./templates/raylib/Makefile.template")},
+	{name = "README", data = #load("./templates/raylib/README.template")},
+}
+
+c_basic_template_files := [?]Template_File {
+	{name = ".gitignore", data = #load("./templates/c/basic/.gitignore.template")},
+	{name = "main.c", data = #load("./templates/c/basic/main.c.template")},
+	{name = "Makefile", data = #load("./templates/c/basic/Makefile.template")},
+	{name = "README", data = #load("./templates/c/basic/README.template")},
+	{name = ".clangd", data = #load("./templates/c/basic/.clangd.template")},
+}
+
+library_template_files := [?]Template_File {
+	{name = "{{name}}.odin", data = #load("./templates/library/main.odin.template")},
+	{
+		name = "examples/basic/main.odin",
+		data = #load("./templates/library/examples/main.odin.template"),
+	},
+	{name = "Makefile", data = #load("./templates/library/Makefile.template")},
+	{name = ".gitignore", data = #load("./templates/library/.gitignore.template")},
+	{name = "ols.json", data = #load("./templates/library/ols.json.template")},
+	{name = "README", data = #load("./templates/library/README.template")},
+}
+
+template_create :: proc(files: []Template_File, name, description: string) -> Template {
+	figlet := bubbletext.get_bytes(name)
+	substitutions := make([]Substitution, 3)
+	substitutions[0] = {
+		key   = "name",
+		value = name,
+	}
+	substitutions[1] = {
+		key   = "figlet",
+		value = string(figlet),
+	}
+	substitutions[2] = {
+		key   = "description",
+		value = description,
 	}
 
-	makefile_templated, _makefile_templated_allocated := strings.replace(
-		makefile_str,
-		"{name}",
-		name,
-		100,
-	)
+	return Template{files = files, substitutions = substitutions}
+}
 
-	gitignore_templated, _gitignore_templated_allocated := strings.replace(
-		gitignore_str,
-		"{name}",
-		name,
-		100,
-	)
+template_produce_many :: proc(template: Template) -> []Template_File {
+	transformed_templates := make([dynamic]Template_File)
 
-	make_dir_err := os.make_directory(name)
-	if make_dir_err != nil do return false
+	for file in template.files {
+		name := file.name
+		data := string(file.data)
 
-	remove_dir_or_panic :: proc(name: string) {
-		if os.remove_all(name) != nil {
-			panic("Something has gone horribly wrong with fs operations")
+		for substitution in template.substitutions {
+			placeholder := fmt.aprintf("{{{{%s}}}}", substitution.key)
+			name, _ = strings.replace_all(name, placeholder, substitution.value)
+			data, _ = strings.replace_all(data, placeholder, substitution.value)
+		}
+
+		append(&transformed_templates, Template_File{name = name, data = transmute([]byte)data})
+	}
+
+	return transformed_templates[:]
+}
+
+template_write_many :: proc(files: []Template_File, output_dir: string) -> bool {
+	if err := os.make_directory(output_dir); err != nil {
+		fmt.eprintfln("error: failed to create project directory %q: %v", output_dir, err)
+		return false
+	}
+
+	cleanup :: proc(output_dir: string) {
+		if os.remove_all(output_dir) != nil {
+			panic("failed to clean up project directory after a write error")
 		}
 	}
 
-	readme_write_err := os.write_entire_file(fmt.aprintf("%s/README", name), readme_templated)
-	if readme_write_err != nil {
-		remove_dir_or_panic(name)
-		return false
-	}
+	for file in files {
+		file_path := fmt.aprintf("%s/%s", output_dir, file.name)
+		dir_path, _ := os.split_path(file_path)
 
-	makefile_write_err := os.write_entire_file(
-		fmt.aprintf("%s/Makefile", name),
-		makefile_templated,
-	)
-	if makefile_write_err != nil {
-		remove_dir_or_panic(name)
-		return false
-	}
+		if !os.exists(dir_path) {
+			if err := os.make_directory_all(dir_path); err != nil {
+				fmt.eprintfln("error: failed to create directory %q: %v", dir_path, err)
+				cleanup(output_dir)
+				return false
+			}
+		}
 
-	main_write_err := os.write_entire_file(
-		fmt.aprintf("%s/%s", name, template.main_filename),
-		template.main,
-	)
-	if main_write_err != nil {
-		remove_dir_or_panic(name)
-		return false
-	}
-
-	gitignore_write_err := os.write_entire_file(
-		fmt.aprintf("%s/.gitignore", name),
-		gitignore_templated,
-	)
-	if gitignore_write_err != nil {
-		remove_dir_or_panic(name)
-		return false
-	}
-
-	if template.language_server_filename != "" {
-		language_server_write_err := os.write_entire_file(
-			fmt.aprintf("%s/%s", name, template.language_server_filename),
-			template.language_server,
-		)
-		if language_server_write_err != nil {
-			remove_dir_or_panic(name)
+		if err := os.write_entire_file(file_path, file.data); err != nil {
+			fmt.eprintfln("error: failed to write %q: %v", file_path, err)
+			cleanup(output_dir)
 			return false
 		}
 	}
@@ -171,7 +147,25 @@ basic_template_create :: proc(
 	return true
 }
 
+basic_template_create :: proc(name, description: string) -> Template {
+	return template_create(basic_template_files[:], name, description)
+}
+
+raylib_template_create :: proc(name, description: string) -> Template {
+	return template_create(raylib_template_files[:], name, description)
+}
+
+c_basic_template_create :: proc(name, description: string) -> Template {
+	return template_create(c_basic_template_files[:], name, description)
+}
+
+library_template_create :: proc(name, description: string) -> Template {
+	return template_create(library_template_files[:], name, description)
+}
+
 main :: proc() {
+	mem.arena_init(&temp_arena, temp_arena_buffer[:])
+	context.temp_allocator = mem.arena_allocator(&temp_arena)
 	context.allocator = context.temp_allocator
 
 	Options :: struct {
@@ -187,99 +181,36 @@ main :: proc() {
 
 	flags.parse_or_exit(&opt, os.args, style)
 
-	selected_basic_template := basic_template
-	basic_template_name := "basic"
+	template: Template
+	template_name: string
+
 	if opt.lang == .c {
 		if opt.type != .Basic {
 			fmt.eprintfln("error: the %s template is not available for C", opt.type)
 			os.exit(1)
 		}
-		selected_basic_template = c_basic_template
-		basic_template_name = "C basic"
+		template = c_basic_template_create(opt.name, opt.description)
+		template_name = "C basic"
+	} else {
+		switch opt.type {
+		case .Basic:
+			template = basic_template_create(opt.name, opt.description)
+			template_name = "basic"
+		case .Raylib:
+			template = raylib_template_create(opt.name, opt.description)
+			template_name = "raylib"
+		case .Library:
+			template = library_template_create(opt.name, opt.description)
+			template_name = "library"
+		}
 	}
 
-	switch opt.type {
-	case .Basic:
-		fmt.printfln("Generating %s template in %q...", basic_template_name, opt.name)
-		ok := basic_template_create(selected_basic_template, opt.name, opt.description)
-		if !ok do panic(fmt.aprintf("failed to create %s template", basic_template_name))
-		fmt.printfln("Created %s template in %q", basic_template_name, opt.name)
-	case .Raylib:
-		fmt.printfln("Generating raylib template in %q...", opt.name)
-		ok := basic_template_create(raylib_template, opt.name, opt.description)
-		if !ok do panic("Failed to create raylib template")
-		fmt.printfln("Created raylib template in %q", opt.name)
-
-	case .Library:
-		fmt.printfln("Generating library template in %q...", opt.name)
-
-		template_file :: proc(content: []byte, name: string) -> string {
-			result, ok := strings.replace(string(content), "{name}", name, 100)
-			if !ok do panic("failed to template library file")
-			return result
-		}
-
-		// Template all files with the project name.
-		main_odin := template_file(library_template.main_odin, opt.name)
-		example_main := template_file(library_template.example_main, opt.name)
-		makefile := template_file(library_template.makefile, opt.name)
-		gitignore := template_file(library_template.gitignore, opt.name)
-		ols_json := template_file(library_template.ols_json, opt.name)
-		readme_str := template_file(library_template.readme, opt.name)
-
-		banner := bubbletext.get_bytes(opt.name)
-		defer delete(banner)
-
-		readme := readme_str
-		banner_result, _ := strings.replace(readme, "{figlet}", string(banner), -1)
-		readme = banner_result
-
-		if opt.description == "" {
-			res, _ := strings.replace(readme, "{description}", "", -1)
-			readme = res
-		} else {
-			res, _ := strings.replace(readme, "{description}", opt.description, 1000)
-			readme = res
-		}
-
-		// Create directory tree.
-		if os.make_directory(opt.name) != nil {
-			panic("failed to create project directory")
-		}
-
-		examples_dir := fmt.aprintf("%s/examples", opt.name)
-		if os.make_directory(examples_dir) != nil {
-			os.remove_all(opt.name)
-			panic("failed to create examples directory")
-		}
-
-		examples_basic_dir := fmt.aprintf("%s/examples/basic", opt.name)
-		if os.make_directory(examples_basic_dir) != nil {
-			os.remove_all(opt.name)
-			panic("failed to create examples/basic directory")
-		}
-
-		// Write all files, cleaning up on any failure.
-		write_or_cleanup :: proc(path, content: string, project_dir: string) {
-			if os.write_entire_file(path, content) != nil {
-				os.remove_all(project_dir)
-				panic(fmt.aprintf("failed to write %s", path))
-			}
-		}
-
-		write_or_cleanup(fmt.aprintf("%s/%s.odin", opt.name, opt.name), main_odin, opt.name)
-		write_or_cleanup(
-			fmt.aprintf("%s/examples/basic/main.odin", opt.name),
-			example_main,
-			opt.name,
-		)
-		write_or_cleanup(fmt.aprintf("%s/Makefile", opt.name), makefile, opt.name)
-		write_or_cleanup(fmt.aprintf("%s/.gitignore", opt.name), gitignore, opt.name)
-		write_or_cleanup(fmt.aprintf("%s/ols.json", opt.name), ols_json, opt.name)
-		write_or_cleanup(fmt.aprintf("%s/README", opt.name), readme, opt.name)
-
-		fmt.printfln("Created library template in %q", opt.name)
+	fmt.printfln("Generating %s template in %q...", template_name, opt.name)
+	files := template_produce_many(template)
+	if !template_write_many(files, opt.name) {
+		panic(fmt.aprintf("failed to create %s template", template_name))
 	}
+	fmt.printfln("Created %s template in %q", template_name, opt.name)
 
 	if opt.with_jj {
 		fmt.println("Creating a jj repo...")
