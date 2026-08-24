@@ -1,0 +1,26 @@
+#pragma once
+#include "base.h"
+#include <stdbool.h>
+#include <stddef.h>
+
+typedef struct {
+    char *str;
+    size_t len;
+} String_View;
+
+typedef struct {
+    String_View remaining;
+    String_View current;
+    char delim;
+    bool has_next;
+} String_View_Iterator;
+
+String_View string_view_from_cstr(char *str);
+void string_view_free(String_View sv);
+
+bool string_view_parse_u32(String_View sv, u32 *result);
+
+String_View_Iterator string_view_split_byte_iterator_create(String_View sv, char byte);
+String_View_Iterator string_view_split_lines_iterator_create(String_View sv);
+// Call only while has_next is true. Returned lines borrow the source storage.
+String_View string_view_iterator_next(String_View_Iterator *iter);

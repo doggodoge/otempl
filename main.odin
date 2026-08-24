@@ -43,40 +43,51 @@ temp_arena: mem.Arena
 
 basic_template_files := [?]Template_File {
 	{name = ".gitignore", data = #load("./templates/basic/.gitignore.template")},
-	{name = "main.odin", data = #load("./templates/basic/main.odin.template")},
-	{name = "Makefile", data = #load("./templates/basic/Makefile.template")},
-	{name = "README", data = #load("./templates/basic/README.template")},
+	{name = "main.odin",  data = #load("./templates/basic/main.odin.template") },
+	{name = "Makefile",   data = #load("./templates/basic/Makefile.template")  },
+	{name = "README",     data = #load("./templates/basic/README.template")    },
 }
 
 raylib_template_files := [?]Template_File {
 	{name = ".gitignore", data = #load("./templates/raylib/.gitignore.template")},
-	{name = "main.odin", data = #load("./templates/raylib/main.odin.template")},
-	{name = "Makefile", data = #load("./templates/raylib/Makefile.template")},
-	{name = "README", data = #load("./templates/raylib/README.template")},
-}
-
-c_basic_template_files := [?]Template_File {
-	{name = ".gitignore", data = #load("./templates/c/basic/.gitignore.template")},
-	{name = "main.c", data = #load("./templates/c/basic/main.c.template")},
-	{name = "Makefile", data = #load("./templates/c/basic/Makefile.template")},
-	{name = "README", data = #load("./templates/c/basic/README.template")},
-	{name = ".clangd", data = #load("./templates/c/basic/.clangd.template")},
+	{name = "main.odin",  data = #load("./templates/raylib/main.odin.template") },
+	{name = "Makefile",   data = #load("./templates/raylib/Makefile.template")  },
+	{name = "README",     data = #load("./templates/raylib/README.template")    },
 }
 
 library_template_files := [?]Template_File {
-	{name = "{{name}}.odin", data = #load("./templates/library/main.odin.template")},
-	{
-		name = "examples/basic/main.odin",
-		data = #load("./templates/library/examples/main.odin.template"),
-	},
-	{name = "Makefile", data = #load("./templates/library/Makefile.template")},
-	{name = ".gitignore", data = #load("./templates/library/.gitignore.template")},
-	{name = "ols.json", data = #load("./templates/library/ols.json.template")},
-	{name = "README", data = #load("./templates/library/README.template")},
+	{name = "{{name}}.odin",            data = #load("./templates/library/main.odin.template")         },
+	{name = "examples/basic/main.odin", data = #load("./templates/library/examples/main.odin.template")},
+	{name = "Makefile",                 data = #load("./templates/library/Makefile.template")          },
+	{name = ".gitignore",               data = #load("./templates/library/.gitignore.template")        },
+	{name = "ols.json",                 data = #load("./templates/library/ols.json.template")          },
+	{name = "README",                   data = #load("./templates/library/README.template")            },
+}
+
+c_basic_template_files := [?]Template_File {
+	// standard files
+	{name = ".gitignore", data = #load("./templates/c/basic/.gitignore.template")},
+	{name = "main.c",     data = #load("./templates/c/basic/main.c.template")    },
+	{name = "Makefile",   data = #load("./templates/c/basic/Makefile.template")  },
+	{name = "README",     data = #load("./templates/c/basic/README.template")    },
+	{name = ".clangd",    data = #load("./templates/c/basic/.clangd.template")   },
+
+	// my specific personal lib stuff
+	{name = "base.h",        data = #load("./templates/c/basic/base.h.template")       },
+	{name = "alignment.c",   data = #load("./templates/c/basic/alignment.c.template")  },
+	{name = "alignment.h",   data = #load("./templates/c/basic/alignment.h.template")  },
+	{name = "arena.c",       data = #load("./templates/c/basic/arena.c.template")      },
+	{name = "arena.h",       data = #load("./templates/c/basic/arena.h.template")      },
+	{name = "string_view.c", data = #load("./templates/c/basic/string_view.c.template")},
+	{name = "string_view.h", data = #load("./templates/c/basic/string_view.h.template")},
+	{name = "files.h",       data = #load("./templates/c/basic/files.h.template")      },
+	{name = "files.c",       data = #load("./templates/c/basic/files.c.template")      },
 }
 
 template_create :: proc(files: []Template_File, name, description: string) -> Template {
 	figlet := bubbletext.get_bytes(name)
+
+	// note: Forced to use this awkward syntax to allocate to the heap. -gary
 	substitutions := make([]Substitution, 3)
 	substitutions[0] = {
 		key   = "name",
@@ -155,12 +166,12 @@ raylib_template_create :: proc(name, description: string) -> Template {
 	return template_create(raylib_template_files[:], name, description)
 }
 
-c_basic_template_create :: proc(name, description: string) -> Template {
-	return template_create(c_basic_template_files[:], name, description)
-}
-
 library_template_create :: proc(name, description: string) -> Template {
 	return template_create(library_template_files[:], name, description)
+}
+
+c_basic_template_create :: proc(name, description: string) -> Template {
+	return template_create(c_basic_template_files[:], name, description)
 }
 
 main :: proc() {
