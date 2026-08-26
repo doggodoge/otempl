@@ -36,7 +36,7 @@ Template :: struct {
 	substitutions: []Substitution,
 }
 
-TEMP_ARENA_SIZE :: mem.Megabyte
+TEMP_ARENA_SIZE :: 128 * mem.Kilobyte
 
 temp_arena_buffer: [TEMP_ARENA_SIZE]byte
 temp_arena: mem.Arena
