@@ -239,7 +239,7 @@ main :: proc() {
 			}
 		}
 
-		remote := fmt.aprintf("git@git.sr.ht:~gary_moore/%s", opt.name)
+		remote := fmt.aprintf("ssh://git@git.mooremoore.net/gmoore/%s", opt.name)
 		exec({"jj", "git", "init", "--colocate"}, opt.name)
 		exec({"jj", "desc", "-r", "@", "-m", "initial commit"}, opt.name)
 		exec({"jj", "git", "remote", "add", "origin", remote}, opt.name)
