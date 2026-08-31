@@ -11,9 +11,9 @@ import "core:strings"
 // This is only really intended to run for a few ms anyway.
 
 Template_Type :: enum {
-	Basic,
-	Raylib,
-	Library,
+	basic,
+	raylib,
+	library,
 }
 
 Language :: enum {
@@ -39,7 +39,7 @@ Template :: struct {
 TEMP_ARENA_SIZE :: 128 * mem.Kilobyte
 
 temp_arena_buffer: [TEMP_ARENA_SIZE]byte
-temp_arena: mem.Arena
+temp_arena:        mem.Arena
 
 basic_template_files := [?]Template_File {
 	{name = ".gitignore", data = #load("./templates/basic/.gitignore.template")},
@@ -180,11 +180,11 @@ main :: proc() {
 	context.allocator = context.temp_allocator
 
 	Options :: struct {
-		type:        Template_Type `usage:"Basic for minimal template, Raylib for a raylib window template, Library for a reusable package template."`,
-		lang:        Language `usage:"Project language: odin or c. C currently supports only the Basic template."`,
-		name:        string `args:"pos=0,required" usage:"The name of the project"`,
-		description: string `usage:"Optional description for project."`,
-		with_jj:     bool `usage:"Init a Jujutsu repo"`,
+		type:        Template_Type `usage:"basic for minimal template, raylib for a raylib window template, library for a reusable package template."`,
+		lang:        Language      `usage:"Project language: odin or c. C currently supports only the Basic template."`,
+		name:        string        `args:"pos=0,required" usage:"The name of the project"`,
+		description: string        `usage:"Optional description for project."`,
+		with_jj:     bool          `usage:"Init a Jujutsu repo"`,
 	}
 
 	opt: Options
@@ -196,7 +196,7 @@ main :: proc() {
 	template_name: string
 
 	if opt.lang == .c {
-		if opt.type != .Basic {
+		if opt.type != .basic {
 			fmt.eprintfln("error: the %s template is not available for C", opt.type)
 			os.exit(1)
 		}
@@ -204,13 +204,13 @@ main :: proc() {
 		template_name = "C basic"
 	} else {
 		switch opt.type {
-		case .Basic:
+		case .basic:
 			template = basic_template_create(opt.name, opt.description)
 			template_name = "basic"
-		case .Raylib:
+		case .raylib:
 			template = raylib_template_create(opt.name, opt.description)
 			template_name = "raylib"
-		case .Library:
+		case .library:
 			template = library_template_create(opt.name, opt.description)
 			template_name = "library"
 		}
