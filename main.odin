@@ -224,11 +224,9 @@ main :: proc() {
 	}
 	fmt.printfln("Created %s template in %q", template_name, opt.name)
 
-	if opt.create_repo && !opt.with_jj {
-		fmt.println("Cannot create repo without jj.")
-	}
+	with_jj := opt.with_jj || opt.create_repo
 
-	if opt.with_jj {
+	if with_jj {
 		fmt.println("Creating a jj repo...")
 
 		exec :: proc(command: []string, dir: string) {
@@ -255,7 +253,9 @@ main :: proc() {
 		fmt.println("Created jj repo")
 
 		if opt.create_repo {
+			fmt.println("Creating repo on Forgejo...")
 			exec({"fj", "repo", "create", "--ssh", "true", "--private", opt.name}, opt.name)
+			fmt.println("Created repo on Forejo")
 		}
 	}
 }
