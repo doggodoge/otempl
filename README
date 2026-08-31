@@ -16,6 +16,6 @@ You must have the following CLI tools installed:
 
 Usage example:
 
- > otempl some-game --type Raylib --description "Description for the game" --with-jj
+ > otempl some-game --type raylib --description "Description for the game" --with-jj
 
  > otempl hello-c --lang c
