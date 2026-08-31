@@ -224,6 +224,10 @@ main :: proc() {
 	}
 	fmt.printfln("Created %s template in %q", template_name, opt.name)
 
+	if opt.create_repo && !opt.with_jj {
+		fmt.println("Cannot create repo without jj.")
+	}
+
 	if opt.with_jj {
 		fmt.println("Creating a jj repo...")
 
