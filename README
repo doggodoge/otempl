@@ -13,9 +13,14 @@ available with the Basic template.
 You must have the following CLI tools installed:
 
  - jj (Jujutsu VCS) for "--with-jj" flag
+ - fj (Forgejo CLI) for "--create-repo" flag
 
 Usage example:
 
- > otempl some-game --type raylib --description "Description for the game" --with-jj
+ > otempl some-game                             \
+ >     --type raylib                            \
+ >     --description "Description for the game" \
+ >     --with-jj                                \
+ >     --create-repo
 
  > otempl hello-c --lang c
