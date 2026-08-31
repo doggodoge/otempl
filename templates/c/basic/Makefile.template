@@ -1,4 +1,5 @@
 CC ?= cc
+CPPFLAGS += -D_POSIX_C_SOURCE=200809L
 CFLAGS ?= -std=c17 -Wall -Wextra -Wpedantic
 TARGET := {{name}}
 SOURCE := alignment.c arena.c files.c string_view.c main.c
@@ -6,16 +7,16 @@ SOURCE := alignment.c arena.c files.c string_view.c main.c
 .PHONY: build run release debug install clean
 
 build:
-	$(CC) $(CFLAGS) $(SOURCE) -o $(TARGET)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(SOURCE) -o $(TARGET)
 
 run: build
 	./$(TARGET)
 
 release:
-	$(CC) $(CFLAGS) -O2 $(SOURCE) -o $(TARGET)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -O2 $(SOURCE) -o $(TARGET)
 
 debug:
-	$(CC) $(CFLAGS) -O0 -g $(SOURCE) -o $(TARGET)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -O0 -g $(SOURCE) -o $(TARGET)
 
 install: release
 	mkdir -p ~/.local/bin
