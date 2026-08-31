@@ -185,6 +185,7 @@ main :: proc() {
 		name:        string        `args:"pos=0,required" usage:"The name of the project"`,
 		description: string        `usage:"Optional description for project."`,
 		with_jj:     bool          `usage:"Init a Jujutsu repo"`,
+		create_repo: bool          `usage:"Create a Forgejo repo"`
 	}
 
 	opt: Options
@@ -234,7 +235,7 @@ main :: proc() {
 				context.allocator,
 			)
 			if err != nil || state.exit_code != 0 {
-				fmt.eprintf("jj command failed: %q\n", command)
+				fmt.eprintf("%s command failed: %q\n", command[0], command)
 				fmt.eprintf("  stderr: %s\n", stderr)
 			}
 		}
@@ -248,5 +249,9 @@ main :: proc() {
 		exec({"jj", "new"}, opt.name)
 
 		fmt.println("Created jj repo")
+
+		if opt.create_repo {
+			exec({"fj", "repo", "create", "--ssh", "true", "--private", opt.name}, opt.name)
+		}
 	}
 }
