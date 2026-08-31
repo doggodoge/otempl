@@ -182,10 +182,10 @@ main :: proc() {
 	Options :: struct {
 		type:        Template_Type `usage:"basic for minimal template, raylib for a raylib window template, library for a reusable package template."`,
 		lang:        Language      `usage:"Project language: odin or c. C currently supports only the Basic template."`,
-		name:        string        `args:"pos=0,required" usage:"The name of the project"`,
+		name:        string        `args:"pos=0,required" usage:"The name of the project."`,
 		description: string        `usage:"Optional description for project."`,
-		with_jj:     bool          `usage:"Init a Jujutsu repo"`,
-		create_repo: bool          `usage:"Create a Forgejo repo"`
+		with_jj:     bool          `usage:"Init a Jujutsu repo."`,
+		create_repo: bool          `usage:"Create a Forgejo repo."`
 	}
 
 	opt: Options
