@@ -9,4 +9,5 @@ Future plans and ideas
  - A --list flag to print all integrated templates.
  - A --force flag to overwrite an existing project directory instead of failing.
  - Add make test task to makefile templates
+ - Add automatic text wrapping for the `--description` flag.
 
