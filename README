@@ -6,6 +6,10 @@
 
 ---
 
+ | this is a change just to test gh pr list and what is available there. This
+ | PR will most certainly be closed! I'm playing about with libadwaita and
+ | building out a viewer for PRs which I might find useful at work.
+
 Simple personal CLI tool for generating Odin projects from either a Basic
 (hello world), Raylib, or Library template. A C hello-world project is also
 available with the Basic template.
