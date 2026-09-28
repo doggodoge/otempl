@@ -66,6 +66,10 @@ library_template_files := [?]Template_File {
 	{name = "README",                   data = #load("./templates/library/README.template")            },
 }
 
+odin_template_post_commands := [?][]string{
+	{"odin", "build", "tools/build.odin", "-file", "-out:build"},
+}
+
 c_basic_template_files := [?]Template_File {
 	// standard files
 	{name = ".gitignore", data = #load("./templates/c/basic/.gitignore.template")},
@@ -252,6 +256,7 @@ main :: proc() {
 			template = library_template_create(opt.name, opt.description)
 			template_name = "library"
 		}
+		template_post_commands = odin_template_post_commands[:]
 
 	case .c:
 		if opt.type != .basic {
