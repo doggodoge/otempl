@@ -8,14 +8,14 @@ font_data := #load("./chunky.bin")
 // A lot of hard coding as we just care about one font and it
 // keeps things simple.
 
-FONT_HEIGHT :: 5
-FONT_MAX_WIDTH :: 20
-FONT_NUM_CHARS :: 101
+FONT_HEIGHT     :: 5
+FONT_MAX_WIDTH  :: 20
+FONT_NUM_CHARS  :: 101
 FONT_FIRST_CHAR :: ' '
 
 ALPHABET_OFFSET :: FONT_NUM_CHARS
-SLOT_SIZE :: FONT_HEIGHT * FONT_MAX_WIDTH
-FONT_DATA_SIZE :: FONT_NUM_CHARS + FONT_NUM_CHARS * SLOT_SIZE
+SLOT_SIZE       :: FONT_HEIGHT * FONT_MAX_WIDTH
+FONT_DATA_SIZE  :: FONT_NUM_CHARS + FONT_NUM_CHARS * SLOT_SIZE
 
 get_bytes :: proc(str: string, allocator := context.allocator) -> []byte {
 	rows: [FONT_HEIGHT][dynamic]byte
@@ -28,8 +28,8 @@ get_bytes :: proc(str: string, allocator := context.allocator) -> []byte {
 
 	for r in str {
 		glyph_rows := _get_char_rows(r)
-		is_space := _char_idx(r) == 0
-		overlap := 0
+		is_space   := _char_idx(r) == 0
+		overlap    := 0
 		if !is_space && !last_was_space {
 			overlap = _overlap_amount(rows, glyph_rows)
 		}
@@ -58,9 +58,9 @@ _get_char_rows :: proc(letter: rune) -> [FONT_HEIGHT][]byte {
 }
 
 _get_char_row :: proc(letter: rune, row: int) -> []byte {
-	idx := _char_idx(letter)
+	idx    := _char_idx(letter)
 	offset := idx * SLOT_SIZE + row * FONT_MAX_WIDTH
-	width := int(font_data[idx])
+	width  := int(font_data[idx])
 	return font_data[ALPHABET_OFFSET + offset:ALPHABET_OFFSET + offset + width]
 }
 
@@ -97,7 +97,7 @@ _max_boundary_overlap :: proc(
 		left_right_blanks := _trailing_spaces(rows[row][:])
 		right_left_blanks := _leading_spaces(glyph_rows[row])
 
-		left_edge := len(rows[row]) - left_right_blanks - 1
+		left_edge  := len(rows[row]) - left_right_blanks - 1
 		right_edge := right_left_blanks
 		if left_edge < 0 || right_edge >= len(glyph_rows[row]) {
 			continue
@@ -133,9 +133,9 @@ _trailing_spaces :: proc(bytes: []byte) -> int {
 }
 
 _can_overlap :: proc(
-	rows: [FONT_HEIGHT][dynamic]byte,
+	rows:       [FONT_HEIGHT][dynamic]byte,
 	glyph_rows: [FONT_HEIGHT][]byte,
-	overlap: int,
+	overlap:    int,
 ) -> bool {
 	for row in 0 ..< FONT_HEIGHT {
 		row_start := len(rows[row]) - overlap
@@ -177,7 +177,7 @@ _smush :: proc(left, right: byte) -> (byte, bool) {
 		return left, true
 	}
 
-	left_group := _hierarchy_group(left)
+	left_group  := _hierarchy_group(left)
 	right_group := _hierarchy_group(right)
 	if left_group != 0 && right_group != 0 && left_group != right_group {
 		if left_group > right_group {

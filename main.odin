@@ -1,6 +1,6 @@
 package main
 
-import bubbletext "./bubbletext"
+import bbtext "./bubbletext"
 import "core:flags"
 import "core:fmt"
 import "core:mem"
@@ -44,17 +44,17 @@ temp_arena_buffer: [TEMP_ARENA_SIZE]byte
 temp_arena:        mem.Arena
 
 basic_template_files := [?]Template_File {
-	{name = ".gitignore", data = #load("./templates/basic/.gitignore.template")},
-	{name = "main.odin",  data = #load("./templates/basic/main.odin.template") },
+	{name = ".gitignore",       data = #load("./templates/basic/.gitignore.template")},
+	{name = "main.odin",        data = #load("./templates/basic/main.odin.template") },
 	{name = "tools/build.odin", data = #load("./templates/odin/build.odin.template")},
-	{name = "README",     data = #load("./templates/basic/README.template")    },
+	{name = "README",           data = #load("./templates/basic/README.template")    },
 }
 
 raylib_template_files := [?]Template_File {
-	{name = ".gitignore", data = #load("./templates/raylib/.gitignore.template")},
-	{name = "main.odin",  data = #load("./templates/raylib/main.odin.template") },
+	{name = ".gitignore",       data = #load("./templates/raylib/.gitignore.template")},
+	{name = "main.odin",        data = #load("./templates/raylib/main.odin.template") },
 	{name = "tools/build.odin", data = #load("./templates/odin/build.odin.template")},
-	{name = "README",     data = #load("./templates/raylib/README.template")    },
+	{name = "README",           data = #load("./templates/raylib/README.template")    },
 }
 
 library_template_files := [?]Template_File {
@@ -102,7 +102,7 @@ go_basic_template_post_commands := [?][]string{
 }
 
 template_create :: proc(files: []Template_File, name, description: string) -> Template {
-	figlet := bubbletext.get_bytes(name)
+	figlet := bbtext.get_bytes(name)
 
 	// note: Forced to use this awkward syntax to allocate to the heap. -gary
 	substitutions := make([]Substitution, 3)
@@ -136,11 +136,11 @@ commands_apply_substitutions :: proc(commands: [][]string, substitutions: []Subs
 @(test)
 does_apply_substitutions :: proc(t: ^testing.T) {
 	buffer: [mem.Kilobyte]byte
-	arena: mem.Arena
+	arena:  mem.Arena
 	mem.arena_init(&arena, buffer[:])
 	context.allocator = mem.arena_allocator(&arena)
 
-	commands := [][]string{{"go", "mod", "init", "example.com/{{name}}"}}
+	commands      := [][]string{{"go", "mod", "init", "example.com/{{name}}"}}
 	substitutions := []Substitution{{key = "name", value = "test_passes"}}
 
 	commands_apply_substitutions(commands, substitutions)
@@ -179,7 +179,7 @@ template_write_many :: proc(files: []Template_File, output_dir: string) -> bool 
 	}
 
 	for file in files {
-		file_path := fmt.aprintf("%s/%s", output_dir, file.name)
+		file_path   := fmt.aprintf("%s/%s", output_dir, file.name)
 		dir_path, _ := os.split_path(file_path)
 
 		if !os.exists(dir_path) {
@@ -223,7 +223,7 @@ go_basic_template_create :: proc(name, description: string) -> Template {
 main :: proc() {
 	mem.arena_init(&temp_arena, temp_arena_buffer[:])
 	context.temp_allocator = mem.arena_allocator(&temp_arena)
-	context.allocator = context.temp_allocator
+	context.allocator      = context.temp_allocator
 
 	Options :: struct {
 		type:        Template_Type `usage:"basic for minimal template, raylib for a raylib window template, library for a reusable package template."`,
@@ -234,26 +234,26 @@ main :: proc() {
 		create_repo: bool          `usage:"Create a Forgejo repo."`
 	}
 
-	opt: Options
+	opt:   Options
 	style: flags.Parsing_Style = .Unix
 
 	flags.parse_or_exit(&opt, os.args, style)
 
-	template: Template
-	template_name: string
+	template:               Template
+	template_name:          string
 	template_post_commands: [][]string
 
 	switch opt.lang {
 	case .odin:
 		switch opt.type {
 		case .basic:
-			template = basic_template_create(opt.name, opt.description)
+			template      = basic_template_create(opt.name, opt.description)
 			template_name = "basic"
 		case .raylib:
-			template = raylib_template_create(opt.name, opt.description)
+			template      = raylib_template_create(opt.name, opt.description)
 			template_name = "raylib"
 		case .library:
-			template = library_template_create(opt.name, opt.description)
+			template      = library_template_create(opt.name, opt.description)
 			template_name = "library"
 		}
 		template_post_commands = odin_template_post_commands[:]
@@ -263,7 +263,7 @@ main :: proc() {
 			fmt.eprintfln("error: the %s template is not available for C", opt.type)
 			os.exit(1)
 		}
-		template = c_basic_template_create(opt.name, opt.description)
+		template      = c_basic_template_create(opt.name, opt.description)
 		template_name = "C basic"
 
 	case .go:
@@ -271,8 +271,8 @@ main :: proc() {
 			fmt.eprintfln("error: the %s template is not available for Go", opt.type)
 			os.exit(1)
 		}
-		template = go_basic_template_create(opt.name, opt.description)
-		template_name = "Go basic"
+		template               = go_basic_template_create(opt.name, opt.description)
+		template_name          = "Go basic"
 		template_post_commands = go_basic_template_post_commands[:]
 
 	case:
