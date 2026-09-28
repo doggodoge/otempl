@@ -1,9 +1,9 @@
-package main
+package font
 
 import "core:fmt"
 import "core:os"
 
-chunky_font := #load("../bubbletext/chunky.flf")
+chunky_font := #load("../../bubbletext/chunky.flf")
 
 FONT_HEIGHT :: 5
 FONT_MAX_WIDTH :: 20
@@ -15,7 +15,7 @@ ALPHABET_OFFSET :: FONT_NUM_CHARS
 SLOT_SIZE :: FONT_HEIGHT * FONT_MAX_WIDTH
 BUFFER_SIZE :: FONT_NUM_CHARS + FONT_NUM_CHARS * SLOT_SIZE
 
-main :: proc() {
+build_bubbletext_font :: proc() {
 	buffer: [BUFFER_SIZE]byte
 	i := FONT_GLYPHS_OFFSET
 

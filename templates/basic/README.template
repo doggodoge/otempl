@@ -2,3 +2,12 @@
 ---
 
 {{description}}
+
+Build
+-----
+
+    odin build tools/build.odin -file -out:build
+    ./build build
+    ./build run
+
+Other commands: `check`, `release`, `debug`, `install`, and `clean`.

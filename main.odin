@@ -46,21 +46,21 @@ temp_arena:        mem.Arena
 basic_template_files := [?]Template_File {
 	{name = ".gitignore", data = #load("./templates/basic/.gitignore.template")},
 	{name = "main.odin",  data = #load("./templates/basic/main.odin.template") },
-	{name = "Makefile",   data = #load("./templates/basic/Makefile.template")  },
+	{name = "tools/build.odin", data = #load("./templates/odin/build.odin.template")},
 	{name = "README",     data = #load("./templates/basic/README.template")    },
 }
 
 raylib_template_files := [?]Template_File {
 	{name = ".gitignore", data = #load("./templates/raylib/.gitignore.template")},
 	{name = "main.odin",  data = #load("./templates/raylib/main.odin.template") },
-	{name = "Makefile",   data = #load("./templates/raylib/Makefile.template")  },
+	{name = "tools/build.odin", data = #load("./templates/odin/build.odin.template")},
 	{name = "README",     data = #load("./templates/raylib/README.template")    },
 }
 
 library_template_files := [?]Template_File {
 	{name = "{{name}}.odin",            data = #load("./templates/library/main.odin.template")         },
 	{name = "examples/basic/main.odin", data = #load("./templates/library/examples/main.odin.template")},
-	{name = "Makefile",                 data = #load("./templates/library/Makefile.template")          },
+	{name = "tools/build.odin",         data = #load("./templates/library/build.odin.template")        },
 	{name = ".gitignore",               data = #load("./templates/library/.gitignore.template")        },
 	{name = "ols.json",                 data = #load("./templates/library/ols.json.template")          },
 	{name = "README",                   data = #load("./templates/library/README.template")            },

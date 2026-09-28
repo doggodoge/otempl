@@ -24,18 +24,22 @@ Then import it in your code:
 Development
 -----------
 
+Build the Odin command runner once:
+
+    odin build tools/build.odin -file -out:build
+
 Run checks:
 
-    make check
+    ./build check
 
 Run tests:
 
-    make test
+    ./build test
 
 Generate documentation:
 
-    make doc
+    ./build doc
 
 Run the example:
 
-    make example
+    ./build example
