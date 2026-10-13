@@ -79,17 +79,17 @@ c_basic_template_files := [?]Template_File {
 	{name = ".clangd",    data = #load("./templates/c/basic/.clangd.template")   },
 
 	// my specific personal lib stuff
-	{name = "base.h",        data = #load("./templates/c/basic/base.h.template")       },
-	{name = "alignment.c",   data = #load("./templates/c/basic/alignment.c.template")  },
-	{name = "alignment.h",   data = #load("./templates/c/basic/alignment.h.template")  },
-	{name = "arena.c",       data = #load("./templates/c/basic/arena.c.template")      },
-	{name = "arena.h",       data = #load("./templates/c/basic/arena.h.template")      },
+	{name = "base.h",         data = #load("./templates/c/basic/base.h.template")        },
+	{name = "alignment.c",    data = #load("./templates/c/basic/alignment.c.template")   },
+	{name = "alignment.h",    data = #load("./templates/c/basic/alignment.h.template")   },
+	{name = "arena.c",        data = #load("./templates/c/basic/arena.c.template")       },
+	{name = "arena.h",        data = #load("./templates/c/basic/arena.h.template")       },
 	{name = "static_arena.c", data = #load("./templates/c/basic/static_arena.c.template")},
 	{name = "static_arena.h", data = #load("./templates/c/basic/static_arena.h.template")},
-	{name = "string_view.c", data = #load("./templates/c/basic/string_view.c.template")},
-	{name = "string_view.h", data = #load("./templates/c/basic/string_view.h.template")},
-	{name = "files.h",       data = #load("./templates/c/basic/files.h.template")      },
-	{name = "files.c",       data = #load("./templates/c/basic/files.c.template")      },
+	{name = "string_view.c",  data = #load("./templates/c/basic/string_view.c.template") },
+	{name = "string_view.h",  data = #load("./templates/c/basic/string_view.h.template") },
+	{name = "files.h",        data = #load("./templates/c/basic/files.h.template")       },
+	{name = "files.c",        data = #load("./templates/c/basic/files.c.template")       },
 }
 
 go_basic_template_files := [?]Template_File {
@@ -251,9 +251,11 @@ main :: proc() {
 		case .basic:
 			template      = basic_template_create(opt.name, opt.description)
 			template_name = "basic"
+
 		case .raylib:
 			template      = raylib_template_create(opt.name, opt.description)
 			template_name = "raylib"
+
 		case .library:
 			template      = library_template_create(opt.name, opt.description)
 			template_name = "library"
