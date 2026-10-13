@@ -1,8 +1,8 @@
 CC ?= cc
-CPPFLAGS += -D_POSIX_C_SOURCE=200809L
+CPPFLAGS += -D_POSIX_C_SOURCE=200809L -D_DARWIN_C_SOURCE
 CFLAGS ?= -std=c17 -Wall -Wextra -Wpedantic
 TARGET := {{name}}
-SOURCE := alignment.c arena.c files.c string_view.c main.c
+SOURCE := alignment.c arena.c static_arena.c files.c string_view.c main.c
 
 .PHONY: build run release debug install clean
 

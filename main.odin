@@ -84,6 +84,8 @@ c_basic_template_files := [?]Template_File {
 	{name = "alignment.h",   data = #load("./templates/c/basic/alignment.h.template")  },
 	{name = "arena.c",       data = #load("./templates/c/basic/arena.c.template")      },
 	{name = "arena.h",       data = #load("./templates/c/basic/arena.h.template")      },
+	{name = "static_arena.c", data = #load("./templates/c/basic/static_arena.c.template")},
+	{name = "static_arena.h", data = #load("./templates/c/basic/static_arena.h.template")},
 	{name = "string_view.c", data = #load("./templates/c/basic/string_view.c.template")},
 	{name = "string_view.h", data = #load("./templates/c/basic/string_view.h.template")},
 	{name = "files.h",       data = #load("./templates/c/basic/files.h.template")      },
