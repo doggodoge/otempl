@@ -284,7 +284,6 @@ main :: proc() {
 		os.exit(1)
 	}
 
-	fmt.printfln("Generating %s template in %q...", template_name, opt.name)
 	files := template_produce_many(template)
 	if !template_write_many(files, opt.name) {
 		panic(fmt.aprintf("failed to create %s template", template_name))
@@ -323,8 +322,6 @@ main :: proc() {
 	with_jj := opt.with_jj || opt.create_repo
 
 	if with_jj {
-		fmt.println("Creating a jj repo...")
-
 		remote := fmt.aprintf("ssh://git@git.mooremoore.net/gmoore/%s", opt.name)
 		exec({"jj", "git", "init", "--colocate"}, opt.name)
 		exec({"jj", "desc", "-r", "@", "-m", "initial commit"}, opt.name)
@@ -336,7 +333,6 @@ main :: proc() {
 		fmt.println("Created jj repo")
 
 		if opt.create_repo {
-			fmt.println("Creating repo on Forgejo...")
 			exec({"fj", "repo", "create", "--ssh", "true", "--private", opt.name}, opt.name)
 			fmt.println("Created repo on Forejo")
 		}
