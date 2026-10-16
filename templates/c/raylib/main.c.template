@@ -1,0 +1,17 @@
+#include "raylib.h"
+#include "base.h"
+
+i32 main(void) {
+    InitWindow(800, 450, "{{name}}");
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose()) {
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+        DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
+        EndDrawing();
+    }
+
+    CloseWindow();
+    return 0;
+}

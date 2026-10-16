@@ -8,7 +8,8 @@
 
 Simple personal CLI tool for generating Odin projects from either a Basic
 (hello world), Raylib, or Library template. C and Go hello-world projects are
-also available with the Basic template.
+also available with the Basic template. C also supports Raylib, using CMake
+to download and build raylib 6.2 as a static library.
 
 You must have the following CLI tools installed:
 
@@ -36,3 +37,14 @@ Usage example:
  > otempl hello-c --lang c
 
  > otempl hello-go --lang go
+
+ > otempl my-game --lang c --type raylib
+ > cd my-game
+ > cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+ > cmake --build build --parallel
+ > cmake --build build --target run
+
+The C Raylib template requires CMake 3.24+, a C17 compiler, a supported build
+tool, and platform graphics development libraries. The first CMake configure
+downloads a pinned, SHA-256 verified raylib source archive. See the generated
+README for release builds and other build options.

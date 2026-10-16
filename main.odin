@@ -98,6 +98,14 @@ go_basic_template_files := [?]Template_File {
 	{name = "README",     data = #load("./templates/go/basic/README.template")    },
 }
 
+c_raylib_template_files := [?]Template_File {
+	{name = ".gitignore",     data = #load("./templates/c/raylib/.gitignore.template")},
+	{name = "main.c",         data = #load("./templates/c/raylib/main.c.template")},
+	{name = "CMakeLists.txt", data = #load("./templates/c/raylib/CMakeLists.txt.template")},
+	{name = "README",         data = #load("./templates/c/raylib/README.template")},
+	{name = ".clangd",        data = #load("./templates/c/raylib/.clangd.template")},
+}
+
 go_basic_template_post_commands := [?][]string{
 	{"go", "mod", "init", "{{name}}"},
 	{"go", "mod", "tidy"},
@@ -218,6 +226,14 @@ c_basic_template_create :: proc(name, description: string) -> Template {
 	return template_create(c_basic_template_files[:], name, description)
 }
 
+c_raylib_template_create :: proc(name, description: string) -> Template {
+	files := make([dynamic]Template_File)
+	append(&files, ..c_raylib_template_files[:])
+	// Include the same personal C helpers as the Basic template.
+	append(&files, ..c_basic_template_files[5:])
+	return template_create(files[:], name, description)
+}
+
 go_basic_template_create :: proc(name, description: string) -> Template {
 	return template_create(go_basic_template_files[:], name, description)
 }
@@ -229,7 +245,7 @@ main :: proc() {
 
 	Options :: struct {
 		type:        Template_Type `usage:"basic for minimal template, raylib for a raylib window template, library for a reusable package template."`,
-		lang:        Language      `usage:"Project language: odin, c, or go. C and Go support only the Basic template."`,
+		lang:        Language      `usage:"Project language: odin, c, or go. C supports Basic and Raylib; Go supports Basic."`,
 		name:        string        `args:"pos=0,required" usage:"The name of the project."`,
 		description: string        `usage:"Optional description for project."`,
 		with_jj:     bool          `usage:"Init a Jujutsu repo."`,
@@ -263,12 +279,17 @@ main :: proc() {
 		template_post_commands = odin_template_post_commands[:]
 
 	case .c:
-		if opt.type != .basic {
+		switch opt.type {
+		case .basic:
+			template      = c_basic_template_create(opt.name, opt.description)
+			template_name = "C basic"
+		case .raylib:
+			template      = c_raylib_template_create(opt.name, opt.description)
+			template_name = "C raylib"
+		case .library:
 			fmt.eprintfln("error: the %s template is not available for C", opt.type)
 			os.exit(1)
 		}
-		template      = c_basic_template_create(opt.name, opt.description)
-		template_name = "C basic"
 
 	case .go:
 		if opt.type != .basic {
