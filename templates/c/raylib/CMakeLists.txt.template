@@ -14,9 +14,7 @@ FetchContent_Declare(raylib
 )
 FetchContent_MakeAvailable(raylib)
 
-add_executable(${PROJECT_NAME}
-    main.c alignment.c arena.c static_arena.c files.c string_view.c
-)
+add_executable(${PROJECT_NAME} main.c)
 set_target_properties(${PROJECT_NAME} PROPERTIES
     C_STANDARD 17
     C_STANDARD_REQUIRED ON

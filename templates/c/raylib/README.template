@@ -38,6 +38,13 @@ https://github.com/raysan5/raylib/wiki/Working-on-GNU-Linux
 The generated compilation database in build/ is used by clangd with Make or
 Ninja generators.
 
+The application uses a unity build: main.c includes the helper .c files and is
+the only application source compiled by CMake. Add new implementation files
+with #include "your_file.c" in main.c. Do not add included .c files to the
+CMake source list. All included files share one translation unit, so file-scope
+names (including static functions and variables) must be unique across the
+application. raylib is built separately as a static library.
+
 Third-party software
 --------------------
 

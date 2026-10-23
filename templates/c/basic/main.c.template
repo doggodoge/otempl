@@ -1,6 +1,13 @@
 #include <stdio.h>
 #include "base.h"
 
+// Unity build: compile only main.c; include project implementations here.
+#include "alignment.c"
+#include "arena.c"
+#include "static_arena.c"
+#include "string_view.c"
+#include "files.c"
+
 i32 main(void) {
     puts("Hello, World!");
     return 0;

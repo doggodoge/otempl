@@ -2,3 +2,18 @@
 ---
 
 {{description}}
+
+Build and run
+-------------
+
+Requires a C17 compiler and Make.
+
+  make run
+  make debug
+  make release
+
+The project uses a unity build: main.c includes the helper .c files and is
+the only source passed to the compiler. Add new implementation files with
+#include "your_file.c" in main.c. Do not compile included .c files separately.
+All included files share one translation unit, so file-scope names (including
+static functions and variables) must be unique across the project.

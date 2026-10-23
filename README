@@ -10,6 +10,8 @@ Simple personal CLI tool for generating Odin projects from either a Basic
 (hello world), Raylib, or Library template. C and Go hello-world projects are
 also available with the Basic template. C also supports Raylib, using CMake
 to download and build raylib 6.2 as a static library.
+Both C templates use unity builds: main.c includes the project helper
+implementations and is the only application source compiled.
 
 You must have the following CLI tools installed:
 
