@@ -1,6 +1,6 @@
 package main
 
-import bbtext "./bubbletext"
+import bbtext    "./bubbletext"
 import vendoring "./vendoring"
 import "core:flags"
 import "core:fmt"
@@ -105,11 +105,11 @@ go_basic_template_files := [?]Template_File {
 }
 
 c_raylib_template_files := [?]Template_File {
-	{ name = ".gitignore",     data = #load("./templates/c/raylib/.gitignore.template")     },
-	{ name = "main.c",         data = #load("./templates/c/raylib/main.c.template")         },
-	{ name = "Makefile",       data = #load("./templates/c/raylib/Makefile.template")       },
-	{ name = "README",         data = #load("./templates/c/raylib/README.template")         },
-	{ name = ".clangd",        data = #load("./templates/c/raylib/.clangd.template")        },
+	{ name = ".gitignore", data = #load("./templates/c/raylib/.gitignore.template") },
+	{ name = "main.c",     data = #load("./templates/c/raylib/main.c.template")     },
+	{ name = "Makefile",   data = #load("./templates/c/raylib/Makefile.template")   },
+	{ name = "README",     data = #load("./templates/c/raylib/README.template")     },
+	{ name = ".clangd",    data = #load("./templates/c/raylib/.clangd.template")    },
 }
 
 when ODIN_OS == .Darwin {
@@ -309,8 +309,8 @@ main :: proc() {
 			template      = c_basic_template_create(opt.name, opt.description)
 			template_name = "C basic"
 		case .raylib:
-			template      = c_raylib_template_create(opt.name, opt.description)
-			template_name = "C raylib"
+			template               = c_raylib_template_create(opt.name, opt.description)
+			template_name          = "C raylib"
 			template_vendored_libs = c_raylib_template_vendored_libs[:]
 		case .library:
 			fmt.eprintfln("error: the %s template is not available for C", opt.type)
