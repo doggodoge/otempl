@@ -1,12 +1,10 @@
 package vendoring
 
-import "core:testing"
 import "core:os"
 import "base:runtime"
 import "core:strings"
 import "core:c"
 import "core:fmt"
-import "core:math/rand"
 import "vendor:curl"
 
 Download_State :: struct {

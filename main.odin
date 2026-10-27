@@ -1,6 +1,7 @@
 package main
 
 import bbtext "./bubbletext"
+import vendoring "./vendoring"
 import "core:flags"
 import "core:fmt"
 import "core:mem"
@@ -38,83 +39,106 @@ Template :: struct {
 	substitutions: []Substitution,
 }
 
-TEMP_ARENA_SIZE :: 128 * mem.Kilobyte
+Vendored_Lib :: struct {
+	url:                string,
+	destination_folder: string,
+}
+
+TEMP_ARENA_SIZE :: 16 * mem.Megabyte
 
 temp_arena_buffer: [TEMP_ARENA_SIZE]byte
 temp_arena:        mem.Arena
 
 basic_template_files := [?]Template_File {
-	{name = ".gitignore",       data = #load("./templates/basic/.gitignore.template")},
-	{name = "main.odin",        data = #load("./templates/basic/main.odin.template") },
-	{name = "tools/build.odin", data = #load("./templates/odin/build.odin.template")},
-	{name = "README",           data = #load("./templates/basic/README.template")    },
+	{ name = ".gitignore",       data = #load("./templates/basic/.gitignore.template") },
+	{ name = "main.odin",        data = #load("./templates/basic/main.odin.template")  },
+	{ name = "tools/build.odin", data = #load("./templates/odin/build.odin.template")  },
+	{ name = "README",           data = #load("./templates/basic/README.template")     },
 }
 
 raylib_template_files := [?]Template_File {
-	{name = ".gitignore",       data = #load("./templates/raylib/.gitignore.template")},
-	{name = "main.odin",        data = #load("./templates/raylib/main.odin.template") },
-	{name = "tools/build.odin", data = #load("./templates/odin/build.odin.template")},
-	{name = "README",           data = #load("./templates/raylib/README.template")    },
+	{ name = ".gitignore",       data = #load("./templates/raylib/.gitignore.template") },
+	{ name = "main.odin",        data = #load("./templates/raylib/main.odin.template")  },
+	{ name = "tools/build.odin", data = #load("./templates/odin/build.odin.template")   },
+	{ name = "README",           data = #load("./templates/raylib/README.template")     },
 }
 
 library_template_files := [?]Template_File {
-	{name = "{{name}}.odin",            data = #load("./templates/library/main.odin.template")         },
-	{name = "examples/basic/main.odin", data = #load("./templates/library/examples/main.odin.template")},
-	{name = "tools/build.odin",         data = #load("./templates/library/build.odin.template")        },
-	{name = ".gitignore",               data = #load("./templates/library/.gitignore.template")        },
-	{name = "ols.json",                 data = #load("./templates/library/ols.json.template")          },
-	{name = "README",                   data = #load("./templates/library/README.template")            },
+	{ name = "{{name}}.odin",            data = #load("./templates/library/main.odin.template")          },
+	{ name = "examples/basic/main.odin", data = #load("./templates/library/examples/main.odin.template") },
+	{ name = "tools/build.odin",         data = #load("./templates/library/build.odin.template")         },
+	{ name = ".gitignore",               data = #load("./templates/library/.gitignore.template")         },
+	{ name = "ols.json",                 data = #load("./templates/library/ols.json.template")           },
+	{ name = "README",                   data = #load("./templates/library/README.template")             },
 }
 
 odin_template_post_commands := [?][]string{
-	{"odin", "build", "tools/build.odin", "-file", "-out:build"},
+	{ "odin", "build", "tools/build.odin", "-file", "-out:build" },
 }
 
 c_basic_template_files := [?]Template_File {
 	// standard files
-	{name = ".gitignore", data = #load("./templates/c/basic/.gitignore.template")},
-	{name = "main.c",     data = #load("./templates/c/basic/main.c.template")    },
-	{name = "Makefile",   data = #load("./templates/c/basic/Makefile.template")  },
-	{name = "README",     data = #load("./templates/c/basic/README.template")    },
-	{name = ".clangd",    data = #load("./templates/c/basic/.clangd.template")   },
+	{ name = ".gitignore", data = #load("./templates/c/basic/.gitignore.template") },
+	{ name = "main.c",     data = #load("./templates/c/basic/main.c.template")     },
+	{ name = "Makefile",   data = #load("./templates/c/basic/Makefile.template")   },
+	{ name = "README",     data = #load("./templates/c/basic/README.template")     },
+	{ name = ".clangd",    data = #load("./templates/c/basic/.clangd.template")    },
 
 	// my specific personal lib stuff
-	{name = "base.h",         data = #load("./templates/c/basic/base.h.template")        },
-	{name = "alignment.c",    data = #load("./templates/c/basic/alignment.c.template")   },
-	{name = "alignment.h",    data = #load("./templates/c/basic/alignment.h.template")   },
-	{name = "arena.c",        data = #load("./templates/c/basic/arena.c.template")       },
-	{name = "arena.h",        data = #load("./templates/c/basic/arena.h.template")       },
-	{name = "static_arena.c", data = #load("./templates/c/basic/static_arena.c.template")},
-	{name = "static_arena.h", data = #load("./templates/c/basic/static_arena.h.template")},
-	{name = "string_view.c",  data = #load("./templates/c/basic/string_view.c.template") },
-	{name = "string_view.h",  data = #load("./templates/c/basic/string_view.h.template") },
-	{name = "files.h",        data = #load("./templates/c/basic/files.h.template")       },
-	{name = "files.c",        data = #load("./templates/c/basic/files.c.template")       },
+	{ name = "base.h",         data = #load("./templates/c/basic/base.h.template")         },
+	{ name = "alignment.c",    data = #load("./templates/c/basic/alignment.c.template")    },
+	{ name = "alignment.h",    data = #load("./templates/c/basic/alignment.h.template")    },
+	{ name = "arena.c",        data = #load("./templates/c/basic/arena.c.template")        },
+	{ name = "arena.h",        data = #load("./templates/c/basic/arena.h.template")        },
+	{ name = "static_arena.c", data = #load("./templates/c/basic/static_arena.c.template") },
+	{ name = "static_arena.h", data = #load("./templates/c/basic/static_arena.h.template") },
+	{ name = "string_view.c",  data = #load("./templates/c/basic/string_view.c.template")  },
+	{ name = "string_view.h",  data = #load("./templates/c/basic/string_view.h.template")  },
+	{ name = "files.h",        data = #load("./templates/c/basic/files.h.template")        },
+	{ name = "files.c",        data = #load("./templates/c/basic/files.c.template")        },
 }
 
 go_basic_template_files := [?]Template_File {
-	{name = ".gitignore", data = #load("./templates/go/basic/.gitignore.template")},
-	{name = "main.go",    data = #load("./templates/go/basic/main.go.template")   },
-	{name = "README",     data = #load("./templates/go/basic/README.template")    },
+	{ name = ".gitignore", data = #load("./templates/go/basic/.gitignore.template") },
+	{ name = "main.go",    data = #load("./templates/go/basic/main.go.template")    },
+	{ name = "README",     data = #load("./templates/go/basic/README.template")     },
 }
 
 c_raylib_template_files := [?]Template_File {
-	{name = ".gitignore",     data = #load("./templates/c/raylib/.gitignore.template")},
-	{name = "main.c",         data = #load("./templates/c/raylib/main.c.template")},
-	{name = "CMakeLists.txt", data = #load("./templates/c/raylib/CMakeLists.txt.template")},
-	{name = "README",         data = #load("./templates/c/raylib/README.template")},
-	{name = ".clangd",        data = #load("./templates/c/raylib/.clangd.template")},
+	{ name = ".gitignore",     data = #load("./templates/c/raylib/.gitignore.template")     },
+	{ name = "main.c",         data = #load("./templates/c/raylib/main.c.template")         },
+	{ name = "CMakeLists.txt", data = #load("./templates/c/raylib/CMakeLists.txt.template") },
+	{ name = "README",         data = #load("./templates/c/raylib/README.template")         },
+	{ name = ".clangd",        data = #load("./templates/c/raylib/.clangd.template")        },
+}
+
+when ODIN_OS == .Darwin {
+	c_raylib_template_vendored_libs := [?]Vendored_Lib{
+		{ url = "https://github.com/raysan5/raylib/releases/download/6.2/raylib-6.2_macos.tar.gz", destination_folder = "vendor" },
+	}
+} else when ODIN_OS == .Linux {
+	when ODIN_ARCH == .amd64 {
+		c_raylib_template_vendored_libs := [?]Vendored_Lib{
+			{ url = "https://github.com/raysan5/raylib/releases/download/6.2/raylib-6.2_linux_amd64.tar.gz", destination_folder = "vendor" },
+		}
+	} else when ODIN_ARCH == .arm64 {
+		c_raylib_template_vendored_libs := [?]Vendored_Lib{
+			{ url = "https://github.com/raysan5/raylib/releases/download/6.2/raylib-6.2_linux_arm64.tar.gz", destination_folder = "vendor" },
+		}
+	}
+} else {
+	c_raylib_template_vendored_libs := [?]Vendored_Lib{} // unsupported
 }
 
 go_basic_template_post_commands := [?][]string{
-	{"go", "mod", "init", "{{name}}"},
-	{"go", "mod", "tidy"},
+	{ "go", "mod", "init", "{{name}}" },
+	{ "go", "mod", "tidy" },
 }
 
 template_create :: proc(files: []Template_File, name, description: string) -> Template {
 	figlet := bbtext.get_bytes(name)
 
-	// note: Forced to use this awkward syntax to allocate to the heap. -gary
+	// note(gary): Forced to use this awkward syntax to allocate to the heap.
 	substitutions := make([]Substitution, 3)
 	substitutions[0] = {
 		key   = "name",
@@ -260,6 +284,7 @@ main :: proc() {
 	template:               Template
 	template_name:          string
 	template_post_commands: [][]string
+	template_vendored_libs: []Vendored_Lib
 
 	switch opt.lang {
 	case .odin:
@@ -286,6 +311,7 @@ main :: proc() {
 		case .raylib:
 			template      = c_raylib_template_create(opt.name, opt.description)
 			template_name = "C raylib"
+			template_vendored_libs = c_raylib_template_vendored_libs[:]
 		case .library:
 			fmt.eprintfln("error: the %s template is not available for C", opt.type)
 			os.exit(1)
@@ -332,11 +358,20 @@ main :: proc() {
 	}
 
 	if len(template_post_commands) > 0 {
+		// run post commands
 		commands_apply_substitutions(template_post_commands, template.substitutions)
 		for cmd in template_post_commands {
 			if !exec(cmd, opt.name) {
 				os.exit(1)
 			}
+		}
+	}
+
+	if len(template_vendored_libs) > 0 {
+		// add vendored libs
+		for lib in template_vendored_libs {
+			dest_folder, _join_path_err := os.join_path({opt.name, lib.destination_folder}, context.allocator)
+			vendoring.gunzip_download_and_extract_into_dir(lib.url, dest_folder)
 		}
 	}
 
