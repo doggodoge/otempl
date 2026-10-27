@@ -44,7 +44,7 @@ Vendored_Lib :: struct {
 	destination_folder: string,
 }
 
-TEMP_ARENA_SIZE :: 16 * mem.Megabyte
+TEMP_ARENA_SIZE :: 128 * mem.Kilobyte
 
 temp_arena_buffer: [TEMP_ARENA_SIZE]byte
 temp_arena:        mem.Arena

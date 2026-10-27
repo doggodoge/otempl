@@ -8,7 +8,7 @@ import "core:fmt"
 import "vendor:curl"
 
 Download_State :: struct {
-	body:         [dynamic]u8,
+	input:        ^os.File,
 	odin_context: runtime.Context,
 }
 
@@ -17,23 +17,22 @@ write_cb :: proc "c" (ptr: [^]c.char, size: c.size_t, nmemb: c.size_t, userdata:
 	context = download_state.odin_context
 
 	total_bytes := size * nmemb
-	_, alloc_err := append(&download_state.body, ..ptr[:total_bytes])
-	#partial switch alloc_err {
-	case .Out_Of_Memory:
-		panic("Ran out of memory during tarball download.")
+	remaining := transmute([]u8)ptr[:total_bytes]
+	for len(remaining) > 0 {
+		n, err := os.write(download_state.input, remaining)
+		if err != nil || n == 0 {
+			fmt.eprintfln("cannot write tar input: %v (%d bytes written)", err, n)
+			// A short return tells curl to abort the download.
+			return 0
+		}
+		remaining = remaining[n:]
 	}
 
 	return total_bytes
 }
 
 gunzip_download_and_extract_into_dir :: proc(download_url: string, output_dir: string) -> (ok: bool) {
-	download_state := Download_State{
-		body = make([dynamic]u8),
-		odin_context = context,
-	}
-	defer delete(download_state.body)
-
-	// download
+	// Configure the download before starting tar.
 	curl_state: ^curl.CURL
 	curl_state = curl.easy_init()
 	if curl_state == nil {
@@ -46,16 +45,10 @@ gunzip_download_and_extract_into_dir :: proc(download_url: string, output_dir: s
 	defer delete(url)
 	curl.easy_setopt(curl_state, .URL, url)
 	curl.easy_setopt(curl_state, .FOLLOWLOCATION, 1)
+	curl.easy_setopt(curl_state, .FAILONERROR, 1)
 	curl.easy_setopt(curl_state, .WRITEFUNCTION, write_cb)
-	curl.easy_setopt(curl_state, .WRITEDATA, cast(rawptr)&download_state)
 
-	result := curl.easy_perform(curl_state)
-	if result != .E_OK {
-		fmt.eprintfln("cannot download %s: %v", download_url, result)
-		return false
-	}
-
-	// extract
+	// Start the extractor before curl begins streaming.
 	if err := os.make_directory_all(output_dir); err != nil && err != .Exist {
 		fmt.eprintfln("cannot create %s: %v", output_dir, err)
 		return false
@@ -80,16 +73,14 @@ gunzip_download_and_extract_into_dir :: proc(download_url: string, output_dir: s
 		return false
 	}
 
-	remaining := download_state.body[:]
-	write_ok := true
-	for len(remaining) > 0 {
-		n, write_err := os.write(input_w, remaining)
-		if write_err != nil || n == 0 {
-			fmt.eprintfln("cannot write tar input: %v (%d bytes written)", write_err, n)
-			write_ok = false
-			break
-		}
-		remaining = remaining[n:]
+	download_state := Download_State{
+		input = input_w,
+		odin_context = context,
+	}
+	curl.easy_setopt(curl_state, .WRITEDATA, cast(rawptr)&download_state)
+	result := curl.easy_perform(curl_state)
+	if result != .E_OK {
+		fmt.eprintfln("cannot download %s: %v", download_url, result)
 	}
 
 	// Closing the writer sends EOF; do this before waiting for tar.
@@ -106,5 +97,5 @@ gunzip_download_and_extract_into_dir :: proc(download_url: string, output_dir: s
 		fmt.eprintfln("tar failed with exit code %d", state.exit_code)
 		return false
 	}
-	return write_ok && close_err == nil
+	return result == .E_OK && close_err == nil
 }
