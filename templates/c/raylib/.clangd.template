@@ -1,2 +1,7 @@
 CompileFlags:
-  CompilationDatabase: build
+  Compiler: clang
+---
+If:
+  PathMatch: .*\.h
+CompileFlags:
+  Add: [-xc]

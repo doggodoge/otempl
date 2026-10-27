@@ -1,0 +1,45 @@
+CC ?= cc
+CPPFLAGS += -D_POSIX_C_SOURCE=200809L -D_DARWIN_C_SOURCE
+CFLAGS ?= -std=c17 -Wall -Wextra -Wpedantic
+TARGET := {{name}}
+SOURCE := main.c
+RAYLIB_DIR ?= $(firstword $(wildcard vendor/raylib-*))
+RAYLIB_LIB := $(RAYLIB_DIR)/lib/libraylib.a
+CPPFLAGS += -I$(RAYLIB_DIR)/include
+
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+LDLIBS += -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo
+else ifeq ($(UNAME_S),Linux)
+LDLIBS += -lGL -lm -lpthread -ldl -lrt -lX11
+endif
+
+.DEFAULT_GOAL := build
+.PHONY: build run release debug install clean check-vendor compile_flags.txt
+
+check-vendor:
+	@test -f "$(RAYLIB_DIR)/include/raylib.h" -a -f "$(RAYLIB_LIB)" || { \
+		echo "Missing vendored raylib: expected vendor/raylib-*/include/raylib.h and lib/libraylib.a (or set RAYLIB_DIR)." >&2; exit 1; }
+
+compile_flags.txt: check-vendor
+	@printf '%s\n' $(CPPFLAGS) $(CFLAGS) > $@
+
+build: compile_flags.txt
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(SOURCE) $(LDFLAGS) $(RAYLIB_LIB) $(LDLIBS) -o $(TARGET)
+
+run: build
+	./$(TARGET)
+
+release: CFLAGS += -O2
+release: build
+
+debug: CFLAGS += -O0 -g
+debug: build
+
+PREFIX ?= $(HOME)/.local
+install: release
+	install -d "$(DESTDIR)$(PREFIX)/bin"
+	install -m 755 $(TARGET) "$(DESTDIR)$(PREFIX)/bin/$(TARGET)"
+
+clean:
+	rm -rf $(TARGET) $(TARGET).dSYM/ compile_flags.txt

@@ -20,15 +20,15 @@ is derived from that FIGlet font and is rebuilt with:
 
   ./build bubbletext-font
 
-raylib (downloaded by generated C projects)
+raylib (downloaded for generated C projects)
 ------------------------------------------
 
-The C Raylib template uses CMake FetchContent to download and statically build
-raylib 6.2. Raylib source is not bundled in otempl.
+otempl downloads a prebuilt raylib 6.2 release into generated C Raylib projects.
+The Makefile links its static library. Raylib is not bundled in otempl.
 
   https://github.com/raysan5/raylib/releases/tag/6.2
   Copyright (c) 2013-2026 Ramon Santamaria (@raysan5)
   License: zlib
 
-The downloaded source retains its LICENSE and bundled dependency notices.
+Preserve the downloaded release's license and bundled dependency notices.
 The generated project README includes attribution and the upstream link.

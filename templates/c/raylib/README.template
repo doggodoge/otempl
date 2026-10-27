@@ -6,49 +6,43 @@
 Build and run
 -------------
 
-Requires CMake 3.24+, a C17 compiler, and a build tool supported by CMake
-(for example Make or Ninja).
+Requires GNU Make, a C17 compiler, and the platform's graphics libraries.
+otempl downloads the raylib 6.2 release archive for the host platform into
+vendor/ when creating the project (Linux amd64/arm64 or macOS).
 
-  cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
-  cmake --build build --parallel
-  cmake --build build --target run
+  make
+  make run
+  make debug
+  make release
+  make clean
+  make install
 
-For a release build, use a separate build directory:
+The Makefile links vendor/raylib-*/lib/libraylib.a and uses the headers in
+that folder's include/ directory. No system raylib installation or build-time
+download is required. Keep one raylib release in vendor/, or select one with:
 
-  cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release
-  cmake --build build-release --parallel
+  make RAYLIB_DIR=vendor/raylib-6.2_linux_amd64
 
-With a multi-configuration generator, pass --config Debug or --config Release
-when building or running. To clean compiled outputs:
+Installation defaults to ~/.local/bin; override PREFIX (and optionally
+DESTDIR) to change it.
 
-  cmake --build build --target clean
-
-To install the application:
-
-  cmake --install build-release --prefix ~/.local
-
-CMake downloads the pinned raylib 6.2 source archive on first configuration,
-verifies its SHA-256, and builds it as a static library. Internet access is
-needed for that initial download; the source is cached under build/_deps.
-No system raylib installation is required. Platform graphics, windowing,
-and audio dependencies are still required. On macOS install Xcode command-line
-tools. Linux dependency instructions:
+On macOS install Xcode command-line tools. Linux requires OpenGL and X11
+development libraries, plus the platform runtime dependencies. See:
 https://github.com/raysan5/raylib/wiki/Working-on-GNU-Linux
 
-The generated compilation database in build/ is used by clangd with Make or
-Ninja generators.
+Building also generates compile_flags.txt for clangd, including the selected
+vendored header path. Run make once before using clangd.
 
 The application uses a unity build: main.c includes the helper .c files and is
-the only application source compiled by CMake. Add new implementation files
-with #include "your_file.c" in main.c. Do not add included .c files to the
-CMake source list. All included files share one translation unit, so file-scope
-names (including static functions and variables) must be unique across the
-application. raylib is built separately as a static library.
+the only application source compiled. Add new implementation files with
+#include "your_file.c" in main.c. All included files share one translation
+unit, so file-scope names (including static functions and variables) must be
+unique across the application.
 
 Third-party software
 --------------------
 
 raylib 6.2: https://github.com/raysan5/raylib/releases/tag/6.2
 Copyright (c) 2013-2026 Ramon Santamaria (@raysan5), zlib license.
-The downloaded source retains its LICENSE and dependency notices. Review those
-notices when redistributing source or binaries.
+Preserve the downloaded release's license and dependency notices when
+redistributing source or binaries.

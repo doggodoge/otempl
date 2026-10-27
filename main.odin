@@ -107,7 +107,7 @@ go_basic_template_files := [?]Template_File {
 c_raylib_template_files := [?]Template_File {
 	{ name = ".gitignore",     data = #load("./templates/c/raylib/.gitignore.template")     },
 	{ name = "main.c",         data = #load("./templates/c/raylib/main.c.template")         },
-	{ name = "CMakeLists.txt", data = #load("./templates/c/raylib/CMakeLists.txt.template") },
+	{ name = "Makefile",       data = #load("./templates/c/raylib/Makefile.template")       },
 	{ name = "README",         data = #load("./templates/c/raylib/README.template")         },
 	{ name = ".clangd",        data = #load("./templates/c/raylib/.clangd.template")        },
 }
