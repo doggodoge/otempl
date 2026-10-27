@@ -9,7 +9,7 @@ CPPFLAGS += -I$(RAYLIB_DIR)/include
 
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
-LDLIBS += -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo
+LDLIBS += -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo -framework QuartzCore
 else ifeq ($(UNAME_S),Linux)
 LDLIBS += -lGL -lm -lpthread -ldl -lrt -lX11
 endif
