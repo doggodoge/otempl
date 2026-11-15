@@ -1,6 +1,6 @@
 package main
 
-import bbtext    "./bubbletext"
+import boxtext   "./boxtext"
 import vendoring "./vendoring"
 import "core:flags"
 import "core:fmt"
@@ -85,6 +85,7 @@ c_basic_template_files := [?]Template_File {
 	{ name = ".clangd",    data = #load("./templates/c/basic/.clangd.template")    },
 
 	// my specific personal lib stuff
+	// todo(gary): find some way to externalise this into an actual standalone lib.
 	{ name = "base.h",         data = #load("./templates/c/basic/base.h.template")         },
 	{ name = "alignment.c",    data = #load("./templates/c/basic/alignment.c.template")    },
 	{ name = "alignment.h",    data = #load("./templates/c/basic/alignment.h.template")    },
@@ -135,22 +136,27 @@ go_basic_template_post_commands := [?][]string{
 	{ "go", "mod", "tidy" },
 }
 
-template_create :: proc(files: []Template_File, name, description: string) -> Template {
-	figlet := bbtext.get_bytes(name)
+template_create :: proc(files: []Template_File, options: Options) -> Template {
+	box_text_pairs := [?][2]string{
+		{"Name",          options.name},
+		{"Template Type", fmt.aprintf("%v", options.type)},
+		{"Language",      fmt.aprintf("%v", options.lang)},
+	}
+	box_text := boxtext.render(box_text_pairs[:])
 
 	// note(gary): Forced to use this awkward syntax to allocate to the heap.
 	substitutions := make([]Substitution, 3)
 	substitutions[0] = {
 		key   = "name",
-		value = name,
+		value = options.name,
 	}
 	substitutions[1] = {
 		key   = "figlet",
-		value = string(figlet),
+		value = box_text,
 	}
 	substitutions[2] = {
 		key   = "description",
-		value = description,
+		value = options.description,
 	}
 
 	return Template{files = files, substitutions = substitutions}
@@ -234,47 +240,46 @@ template_write_many :: proc(files: []Template_File, output_dir: string) -> bool 
 	return true
 }
 
-basic_template_create :: proc(name, description: string) -> Template {
-	return template_create(basic_template_files[:], name, description)
+basic_template_create :: proc(options: Options) -> Template {
+	return template_create(basic_template_files[:], options)
 }
 
-raylib_template_create :: proc(name, description: string) -> Template {
-	return template_create(raylib_template_files[:], name, description)
+raylib_template_create :: proc(options: Options) -> Template {
+	return template_create(raylib_template_files[:], options)
 }
 
-library_template_create :: proc(name, description: string) -> Template {
-	return template_create(library_template_files[:], name, description)
+library_template_create :: proc(options: Options) -> Template {
+	return template_create(library_template_files[:], options)
 }
 
-c_basic_template_create :: proc(name, description: string) -> Template {
-	return template_create(c_basic_template_files[:], name, description)
+c_basic_template_create :: proc(options: Options) -> Template {
+	return template_create(c_basic_template_files[:], options)
 }
 
-c_raylib_template_create :: proc(name, description: string) -> Template {
+c_raylib_template_create :: proc(options: Options) -> Template {
 	files := make([dynamic]Template_File)
 	append(&files, ..c_raylib_template_files[:])
-	// Include the same personal C helpers as the Basic template.
 	append(&files, ..c_basic_template_files[5:])
-	return template_create(files[:], name, description)
+	return template_create(files[:], options)
 }
 
-go_basic_template_create :: proc(name, description: string) -> Template {
-	return template_create(go_basic_template_files[:], name, description)
+go_basic_template_create :: proc(options: Options) -> Template {
+	return template_create(go_basic_template_files[:], options)
+}
+
+Options :: struct {
+	type:        Template_Type `usage:"basic for minimal template, raylib for a raylib window template, library for a reusable package template."`,
+	lang:        Language      `usage:"Project language: odin, c, or go. C supports Basic and Raylib; Go supports Basic."`,
+	name:        string        `args:"pos=0,required" usage:"The name of the project."`,
+	description: string        `usage:"Optional description for project."`,
+	with_jj:     bool          `usage:"Init a Jujutsu repo."`,
+	create_repo: bool          `usage:"Create a Forgejo repo."`
 }
 
 main :: proc() {
 	mem.arena_init(&temp_arena, temp_arena_buffer[:])
 	context.temp_allocator = mem.arena_allocator(&temp_arena)
 	context.allocator      = context.temp_allocator
-
-	Options :: struct {
-		type:        Template_Type `usage:"basic for minimal template, raylib for a raylib window template, library for a reusable package template."`,
-		lang:        Language      `usage:"Project language: odin, c, or go. C supports Basic and Raylib; Go supports Basic."`,
-		name:        string        `args:"pos=0,required" usage:"The name of the project."`,
-		description: string        `usage:"Optional description for project."`,
-		with_jj:     bool          `usage:"Init a Jujutsu repo."`,
-		create_repo: bool          `usage:"Create a Forgejo repo."`
-	}
 
 	opt:   Options
 	style: flags.Parsing_Style = .Unix
@@ -290,15 +295,15 @@ main :: proc() {
 	case .odin:
 		switch opt.type {
 		case .basic:
-			template      = basic_template_create(opt.name, opt.description)
+			template      = basic_template_create(opt)
 			template_name = "basic"
 
 		case .raylib:
-			template      = raylib_template_create(opt.name, opt.description)
+			template      = raylib_template_create(opt)
 			template_name = "raylib"
 
 		case .library:
-			template      = library_template_create(opt.name, opt.description)
+			template      = library_template_create(opt)
 			template_name = "library"
 		}
 		template_post_commands = odin_template_post_commands[:]
@@ -306,10 +311,10 @@ main :: proc() {
 	case .c:
 		switch opt.type {
 		case .basic:
-			template      = c_basic_template_create(opt.name, opt.description)
+			template      = c_basic_template_create(opt)
 			template_name = "C basic"
 		case .raylib:
-			template               = c_raylib_template_create(opt.name, opt.description)
+			template               = c_raylib_template_create(opt)
 			template_name          = "C raylib"
 			template_vendored_libs = c_raylib_template_vendored_libs[:]
 		case .library:
@@ -322,7 +327,7 @@ main :: proc() {
 			fmt.eprintfln("error: the %s template is not available for Go", opt.type)
 			os.exit(1)
 		}
-		template               = go_basic_template_create(opt.name, opt.description)
+		template               = go_basic_template_create(opt)
 		template_name          = "Go basic"
 		template_post_commands = go_basic_template_post_commands[:]
 

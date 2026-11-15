@@ -4,12 +4,12 @@ import "core:fmt"
 import "core:strings"
 import "core:testing"
 
-BOX_TOP_LEFT     :: "┏"
-BOX_TOP_RIGHT    :: "┓"
-BOX_BOTTOM_LEFT  :: "┗"
-BOX_BOTTOM_RIGHT :: "┛"
-BOX_HORIZONTAL   :: "━"
-BOX_VERTICAL     :: "┃"
+BOX_TOP_LEFT     :: "┌"
+BOX_TOP_RIGHT    :: "┐"
+BOX_BOTTOM_LEFT  :: "└"
+BOX_BOTTOM_RIGHT :: "┘"
+BOX_HORIZONTAL   :: "─"
+BOX_VERTICAL     :: "│"
 
 // Renders `pairs` as a boxed, aligned table of key/value rows.
 //
