@@ -1,8 +1,10 @@
-┌──────────────────────────────┐
-│ Name      otempl             │
-│ Purpose   Project Generation │
-│ Language  Odin               │
-└──────────────────────────────┘
+┌────┬┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┬────┐
+│ ○  ┊                                  ┊  ○ │
+│    ┊   Name      otempl               ┊    │
+│ ○  ┊   Purpose   Project Generation   ┊  ○ │
+│    ┊   Language  Odin                 ┊    │
+│ ○  ┊                                  ┊  ○ │
+└────┴┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┴────┘
 
 Simple personal CLI tool for generating Odin projects from either a Basic
 (hello world), Raylib, or Library template. C and Go hello-world projects are
